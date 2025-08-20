@@ -1,6 +1,6 @@
 package com.otaku.rating.core.user.model.valueobject;
 
-import com.otaku.rating.core.generic.util.CharacterUtils;
+import com.otaku.rating.core.generic.utils.CharacterUtils;
 import com.otaku.rating.core.user.exception.UserNameInvalidCharacterException;
 import com.otaku.rating.core.user.exception.UserNameInvalidFormatException;
 import com.otaku.rating.core.user.exception.UserNameInvalidLengthException;

@@ -1,4 +1,4 @@
-package com.otaku.rating.core.generic.util;
+package com.otaku.rating.core.generic.utils;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
