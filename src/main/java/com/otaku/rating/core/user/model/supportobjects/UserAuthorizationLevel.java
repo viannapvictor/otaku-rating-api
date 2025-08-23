@@ -1,6 +1,4 @@
-package com.otaku.rating.core.user.model.properties;
-
-import lombok.NoArgsConstructor;
+package com.otaku.rating.core.user.model.supportobjects;
 
 public final class UserAuthorizationLevel {
     private UserAuthorizationLevel() {

@@ -1,4 +1,4 @@
-package com.otaku.rating.core.user.model.properties;
+package com.otaku.rating.core.user.model.supportobjects;
 
 import lombok.Getter;
 
