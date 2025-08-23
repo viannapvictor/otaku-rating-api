@@ -1,0 +1,159 @@
+@startuml
+
+
+class AnimeFactoryImpl implements AnimeFactory {
+    + create(params: AnimeParams): Anime
+}
+
+interface AnimeFactory {
+    + create(params: AnimeParams): Anime
+}
+
+AnimeFactory --|> Anime : "creates"
+AnimeFactory --|> AnimeParams : "needs"
+
+class AnimeParams {
+    - title: String
+    - description: String
+    - release: LocalDate
+    - contributions: List<AnimeContributionParams>
+}
+
+AnimeParams --|> AnimeContributionParams
+
+class AnimeContributionParams {
+    - personId: Long
+    - role: CreditRole
+}
+
+AnimeContributionParams --|> CreditRole
+
+class Anime {
+    - id: AnimeIdentifier
+    - title: AnimeTitle
+    - description: AnimeDescription
+    - release: AnimeRelease
+    - totalRate: TotalRate
+    - contributions: List<AnimeContribution>
+}
+
+Anime --|> AnimeIdentifier
+Anime --|> AnimeTitle
+Anime --|> AnimeDescription
+Anime --|> AnimeRelease
+Anime --|> TotalRate
+
+class AnimeIdentifier {
+    - value: String
+}
+
+class AnimeTitle {
+    - value: String
+}
+
+class AnimeDescription {
+    - value: String
+}
+
+class AnimeRelease {
+    - value: LocalDate
+}
+
+class TotalRate {
+    - average: float
+    - rates: List<Rate>
+    + addRate(rate: Rate)
+}
+
+TotalRate --|> Rate
+
+class Rate {
+    - id: Long
+    - classification: RateClassification
+    - commentary: RateCommentary
+    - user: User
+}
+
+Rate --|> RateCommentary
+Rate --|> RateClassification
+Rate ---|> User
+
+class RateCommentary {
+    - value: String
+}
+
+class RateClassification {
+    - value: float
+}
+
+enum CreditRole {
+    AUTHOR
+    DIRECTOR
+    MUSIC
+    DESIGN
+    
+}
+
+class AnimeContribution {
+    - person: Person
+    - anime: Anime
+    - role: CreditRole
+}
+
+AnimeContribution <|--|> Person
+AnimeContribution <|--|> Anime
+AnimeContribution --|> CreditRole
+
+class Person {
+    - id: Long
+    - name: PersonName
+    - description: PersonDescription
+    - contributions: List<AnimeContribution>
+}
+
+Person --|> PersonName
+Person --|> PersonDescription
+
+class PersonName {
+    - value: String
+}
+
+class PersonDescription {
+    - value: String
+}
+
+interface AnimeService {
+    + add(anime: Anime): Anime
+    + update(anime: Anime): Anime
+    + delete(anime: Anime): void
+    + findById(): Optional<Anime>
+    + getByIdOrThrow(): Anime
+    + findAll(int page, int size): List<Anime>
+}
+
+class AnimeServiceImpl implements AnimeService {
+    - animeRepository: AnimeRepository
+}
+
+AnimeServiceImpl --|> AnimeRepository
+
+interface AnimeRepository {
+    + save(anime: Anime)
+    + delete(anime: Anime)
+    + findById(id: AnimeIdentifier): Optional<Anime>
+    + findAll(int page, int size): List<Anime>
+}
+
+interface RatingService {
+}
+
+class RatingServiceImpl implements RatingService {
+    - ratingRepository: RatingRepository
+}
+
+RatingServiceImpl --|> RatingRepository
+
+interface RatingRepository {
+}
+
+@enduml
