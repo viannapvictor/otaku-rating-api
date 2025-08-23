@@ -1,10 +1,10 @@
 package com.otaku.rating.core.user.model;
 
 import com.otaku.rating.core.generic.exception.ValidationException;
-import com.otaku.rating.core.user.model.properties.Email;
-import com.otaku.rating.core.user.model.properties.Name;
-import com.otaku.rating.core.user.model.properties.Password;
-import com.otaku.rating.core.user.model.properties.UserName;
+import com.otaku.rating.core.user.model.supportobjects.Email;
+import com.otaku.rating.core.user.model.supportobjects.Name;
+import com.otaku.rating.core.user.model.supportobjects.Password;
+import com.otaku.rating.core.user.model.supportobjects.UserName;
 import lombok.Getter;
 
 @Getter
