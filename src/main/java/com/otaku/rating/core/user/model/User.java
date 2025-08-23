@@ -1,7 +1,7 @@
 package com.otaku.rating.core.user.model;
 
 import com.otaku.rating.core.user.model.properties.*;
-import com.otaku.rating.core.user.service.PasswordEncoderService;
+import com.otaku.rating.core.user.service.PasswordEncoderServiceImpl;
 import lombok.Getter;
 
 @Getter
@@ -14,8 +14,8 @@ public class User {
     private final EnumUserRole role;
     private final boolean active;
 
-    public User(PasswordEncoderService passwordEncoderService, UserRegister userRegister) {
-        if (passwordEncoderService == null) {
+    public User(PasswordEncoderServiceImpl passwordEncoderServiceImpl, UserRegister userRegister) {
+        if (passwordEncoderServiceImpl == null) {
             throw new IllegalArgumentException("The password encoder must not be null.");
         }
         if (userRegister == null) {
@@ -26,7 +26,7 @@ public class User {
         this.userName = userRegister.getUserName();
         this.name = userRegister.getName();
         this.email = userRegister.getEmail();
-        this.encryptedPassword = passwordEncoderService.encryptPassword(userRegister.getPassword());
+        this.encryptedPassword = passwordEncoderServiceImpl.encryptPassword(userRegister.getPassword());
         this.role = EnumUserRole.COMMON;
         this.active = false;
     }
@@ -49,14 +49,14 @@ public class User {
         this.active = active;
     }
 
-    public void setPassword(PasswordEncoderService passwordEncoderService, Password password) {
-        if (passwordEncoderService == null) {
+    public void setPassword(PasswordEncoderServiceImpl passwordEncoderServiceImpl, Password password) {
+        if (passwordEncoderServiceImpl == null) {
             throw new IllegalArgumentException("The password encoder must not be null.");
         }
         if (password == null) {
             throw new IllegalArgumentException("Cannot set null to the password field.");
         }
-        encryptedPassword = passwordEncoderService.encryptPassword(password);
+        encryptedPassword = passwordEncoderServiceImpl.encryptPassword(password);
     }
 
     public void setName(Name name) {
