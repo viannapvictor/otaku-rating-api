@@ -22,8 +22,8 @@ public class PageResponse<T> {
     public static <T, E> PageResponse<E> from(Page<T> page, List<E> content) {
         return new PageResponse<>(
                 content,
-                page.getNumber(),
                 page.getSize(),
+                page.getNumber(),
                 page.getTotalElements(),
                 page.getTotalPages(),
                 page.isFirst(),
