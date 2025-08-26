@@ -19,7 +19,9 @@ public class UserMapper implements Mapper<User, UserEntity> {
                 Name.parseUnsafe(userEntity.getName()),
                 userEntity.getPassword(),
                 userEntity.getRole(),
-                userEntity.isActive()
+                userEntity.isActive(),
+                userEntity.getCreatedAt(),
+                userEntity.getUpdatedAt()
         );
     }
 
@@ -33,6 +35,8 @@ public class UserMapper implements Mapper<User, UserEntity> {
                 .password(user.getEncryptedPassword())
                 .role(user.getRole())
                 .active(user.isActive())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
                 .build();
     }
 }
