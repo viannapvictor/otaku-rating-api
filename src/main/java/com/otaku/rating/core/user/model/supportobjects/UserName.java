@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode
 public class UserName {
-    public static final int MIN_LENGTH = 15;
+    public static final int MIN_LENGTH = 6;
     public static final int MAX_LENGTH = 20;
 
     private String value;

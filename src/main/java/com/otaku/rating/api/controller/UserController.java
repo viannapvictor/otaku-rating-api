@@ -52,15 +52,6 @@ public class UserController {
         return ApiResponse.success(userViewDTO).createResponse(HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserViewDTO>> update(@PathVariable("id") Long id, @RequestBody UserRegisterDTO form) {
-        User user = userInputMapper.toModel(form);
-        User updatedUser = userService.updateUser(user);
-        UserViewDTO userViewDTO = userOutputMapper.toEntity(updatedUser);
-
-        return ApiResponse.success(userViewDTO).createResponse(HttpStatus.OK);
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Object>> delete(@PathVariable("id") Long id) {
         User user = userService.findById(id).orElseThrow(() -> new RuntimeException("User not found"));

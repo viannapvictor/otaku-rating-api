@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public class PageRequest {
     private static final int PAGE_DEFAULT = 0;
-    private static final int SIZE_DEFAULT = 20;
+    private static final int SIZE_DEFAULT = 5;
 
     private final int page;
     private final int size;
