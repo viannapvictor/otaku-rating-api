@@ -2,8 +2,10 @@ package com.otaku.rating.api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication(scanBasePackages = "com.otaku.rating")
+@EnableJpaRepositories(basePackages = "com.otaku.rating.infra.**.repository")
 public class OtakuRatingApiApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(OtakuRatingApiApplication.class, args);
