@@ -4,6 +4,8 @@ import com.otaku.rating.core.user.model.supportobjects.*;
 import com.otaku.rating.core.user.service.PasswordEncoderServiceImpl;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 public class User {
     private final Long id;
@@ -13,6 +15,8 @@ public class User {
     private String encryptedPassword;
     private final EnumUserRole role;
     private final boolean active;
+    private final LocalDateTime createdAt;
+    private final LocalDateTime updatedAt;
 
     public User(PasswordEncoderServiceImpl passwordEncoderServiceImpl, UserRegister userRegister) {
         if (passwordEncoderServiceImpl == null) {
@@ -22,6 +26,7 @@ public class User {
             throw new IllegalArgumentException("The user register must not be null.");
         }
 
+        LocalDateTime now = LocalDateTime.now();
         this.id = null;
         this.userName = userRegister.getUserName();
         this.name = userRegister.getName();
@@ -29,6 +34,8 @@ public class User {
         this.encryptedPassword = passwordEncoderServiceImpl.encryptPassword(userRegister.getPassword());
         this.role = EnumUserRole.COMMON;
         this.active = false;
+        this.createdAt = now;
+        this.updatedAt = now;
     }
 
     private User(
@@ -38,7 +45,9 @@ public class User {
             Name name,
             String encryptedPassword,
             EnumUserRole role,
-            boolean active
+            boolean active,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt
     ) {
         this.id = id;
         this.email = email;
@@ -47,6 +56,8 @@ public class User {
         this.encryptedPassword = encryptedPassword;
         this.role = role;
         this.active = active;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     public void setPassword(PasswordEncoderServiceImpl passwordEncoderServiceImpl, Password password) {
@@ -95,8 +106,10 @@ public class User {
             Name name,
             String encryptedPassword,
             EnumUserRole userRole,
-            boolean active
+            boolean active,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt
     ) {
-        return new User(id, email, userName, name, encryptedPassword, userRole, active);
+        return new User(id, email, userName, name, encryptedPassword, userRole, active, createdAt, updatedAt);
     }
 }
