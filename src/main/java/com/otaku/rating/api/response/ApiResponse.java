@@ -26,6 +26,11 @@ public final class ApiResponse<T> {
         return new ApiResponse<>(false, null, error);
     }
 
+    public static <T> ApiResponse<T> error(String code, String message) {
+        ErrorData error = new ErrorData(code, message);
+        return new ApiResponse<>(false, null, error);
+    }
+
     public ResponseEntity<ApiResponse<T>> createResponse(HttpStatus status) {
         return ResponseEntity.status(status).body(this);
     }
