@@ -2,8 +2,8 @@ package com.otaku.rating.core.user.service;
 
 import com.otaku.rating.core.user.model.User;
 import com.otaku.rating.core.user.model.UserRegister;
-import com.otaku.rating.core.user.model.supportobjects.Email;
-import com.otaku.rating.core.user.model.supportobjects.UserName;
+import com.otaku.rating.core.user.model.valueobjects.Email;
+import com.otaku.rating.core.user.model.valueobjects.UserName;
 import com.otaku.rating.core.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

@@ -1,4 +1,4 @@
-package com.otaku.rating.core.user.model.supportobjects;
+package com.otaku.rating.core.user.model.valueobjects;
 
 public final class UserAuthorizationLevel {
     private UserAuthorizationLevel() {

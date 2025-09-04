@@ -1,8 +1,8 @@
 package com.otaku.rating.core.user.repository;
 
 import com.otaku.rating.core.user.model.User;
-import com.otaku.rating.core.user.model.supportobjects.Email;
-import com.otaku.rating.core.user.model.supportobjects.UserName;
+import com.otaku.rating.core.user.model.valueobjects.Email;
+import com.otaku.rating.core.user.model.valueobjects.UserName;
 import org.springframework.data.domain.Page;
 
 import java.util.Optional;

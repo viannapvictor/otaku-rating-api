@@ -2,9 +2,9 @@ package com.otaku.rating.infra.user.mapper;
 
 import com.otaku.rating.core.generic.mapper.Mapper;
 import com.otaku.rating.core.user.model.User;
-import com.otaku.rating.core.user.model.supportobjects.Email;
-import com.otaku.rating.core.user.model.supportobjects.Name;
-import com.otaku.rating.core.user.model.supportobjects.UserName;
+import com.otaku.rating.core.user.model.valueobjects.Email;
+import com.otaku.rating.core.user.model.valueobjects.Name;
+import com.otaku.rating.core.user.model.valueobjects.UserName;
 import com.otaku.rating.infra.user.entities.UserEntity;
 import org.springframework.stereotype.Component;
 

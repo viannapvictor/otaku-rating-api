@@ -1,4 +1,4 @@
-package com.otaku.rating.core.user.model.supportobjects;
+package com.otaku.rating.core.user.model.valueobjects;
 
 import com.otaku.rating.core.generic.exception.ValidationException;
 import lombok.AccessLevel;

@@ -1,6 +1,6 @@
 package com.otaku.rating.core.user.model;
 
-import com.otaku.rating.core.user.model.supportobjects.*;
+import com.otaku.rating.core.user.model.valueobjects.*;
 import com.otaku.rating.core.user.service.PasswordEncoderServiceImpl;
 import lombok.Getter;
 
