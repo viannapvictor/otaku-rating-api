@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface UserService {
     User createUser(UserRegister userRegister);
     Page<User> getPage(int page, int size);
-    Optional<User> findById(Long id);
+    User findById(long id);
     Optional<User> findByEmail(Email email);
     Optional<User> findByUserName(UserName userName);
     boolean existsByEmail(Email email);

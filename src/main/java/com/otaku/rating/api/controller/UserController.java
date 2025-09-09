@@ -38,7 +38,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<UserViewDTO>> getById(@PathVariable("id") Long id) {
-        User user = userService.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userService.findById(id);
         UserViewDTO userViewDTO = userOutputMapper.toEntity(user);
         
         return ApiResponse.success(userViewDTO).createResponse(HttpStatus.OK);
@@ -54,7 +54,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Object>> delete(@PathVariable("id") Long id) {
-        User user = userService.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userService.findById(id);
         userService.deleteUser(user);
 
         return ApiResponse.success(null).createResponse(HttpStatus.OK);

@@ -1,5 +1,6 @@
 package com.otaku.rating.core.user.service;
 
+import com.otaku.rating.core.generic.exception.NotFoundException;
 import com.otaku.rating.core.user.model.User;
 import com.otaku.rating.core.user.model.UserRegister;
 import com.otaku.rating.core.user.model.valueobjects.Email;
@@ -37,8 +38,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> findById(Long id) {
-        return userRepository.findById(id);
+    public User findById(long id) throws NotFoundException {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND", "There's no user for this id."));
     }
 
     @Override
