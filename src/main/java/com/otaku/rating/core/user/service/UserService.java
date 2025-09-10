@@ -1,8 +1,11 @@
 package com.otaku.rating.core.user.service;
 
+import com.otaku.rating.core.user.model.AuthTokens;
 import com.otaku.rating.core.user.model.User;
 import com.otaku.rating.core.user.model.UserRegister;
 import com.otaku.rating.core.user.model.valueobjects.Email;
+import com.otaku.rating.core.user.model.valueobjects.Name;
+import com.otaku.rating.core.user.model.valueobjects.Password;
 import com.otaku.rating.core.user.model.valueobjects.UserName;
 import org.springframework.data.domain.Page;
 
@@ -12,10 +15,14 @@ public interface UserService {
     User createUser(UserRegister userRegister);
     Page<User> getPage(int page, int size);
     User findById(long id);
-    Optional<User> findByEmail(Email email);
-    Optional<User> findByUserName(UserName userName);
-    boolean existsByEmail(Email email);
-    boolean existsByUserName(UserName userName);
-    User updateUser(User user);
+    User findByEmail(Email email);
+    User findByUserName(UserName userName);
+    User updateUserProfile(Name name, UserName userName);
     void deleteUser(User user);
+    void updateUserPassword(Password oldPassword, Password newPassword);
+    AuthTokens login(Email email, Password password);
+    void resetPassword(String code, Password newPassword);
+    void logout();
+    void confirmEmail(String code, Email currentEmail);
+    void updateUserEmail(Email email);
 }

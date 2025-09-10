@@ -76,7 +76,7 @@ public class ContextServiceImpl implements ContextService {
     @NonNull
     public User getUserOrThrow() throws ValidationException {
         if (user == null) {
-            throw new ValidationException("COMMON_UNAUTHORIZED", "Unauthorized access");
+            throw new ValidationException("access.not.authorized", "Unauthorized access");
         }
         return user;
     }
@@ -85,7 +85,7 @@ public class ContextServiceImpl implements ContextService {
     public AuthTokens refreshTokens() throws ValidationException {
         String refreshToken = getCookieValue("refresh_token");
         if (refreshToken == null) {
-            throw new ValidationException("REFRESH_TOKEN_EXPIRED", "Refresh token expired");
+            throw new ValidationException("token.expired", "Refresh token expired");
         }
         RefreshToken updatedRefreshToken = tokenService.increaseRefreshTokenExpiration(refreshToken);
         AccessToken newAccessToken = tokenService.createAccessToken(updatedRefreshToken);
@@ -96,7 +96,7 @@ public class ContextServiceImpl implements ContextService {
     @Override
     public void throwIfNotAuthenticated() throws ValidationException {
         if (!isAuthenticated()) {
-            throw new ValidationException("COMMON_UNAUTHORIZED", "Unauthorized access");
+            throw new ValidationException("access.not.authorized", "Unauthorized access");
         }
     }
 

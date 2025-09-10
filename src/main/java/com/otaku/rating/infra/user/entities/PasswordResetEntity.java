@@ -11,7 +11,7 @@ import java.time.Instant;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "TB_PASSWORD_RESET")
+@Table(name = "password_resets")
 public class PasswordResetEntity {
     @Id
     private String code;
