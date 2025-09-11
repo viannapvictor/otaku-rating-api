@@ -32,9 +32,9 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
             throw new IllegalArgumentException("The current email must not be empty.");
         }
         EmailConfirmation emailConfirmation = emailConfirmationRepository.findByUserEmail(currentEmail)
-                .orElseThrow(() -> new ValidationException("EMAIL_ALREADY_CONFIRMED", "Email already confirmed"));
+                .orElseThrow(() -> new ValidationException("email.already.confirmed", "Email already confirmed."));
         if (emailConfirmation.isExpired() || !emailConfirmation.getCode().matches(code)) {
-            throw new ValidationException("EMAIL_CONFIRMATION_CODE_INVALID", "Email confirmation code is invalid");
+            throw new ValidationException("confirmation.token.invalid", "Email confirmation code is invalid");
         }
         emailConfirmationRepository.delete(emailConfirmation);
         return emailConfirmation;
@@ -50,7 +50,7 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
     public EmailConfirmation addEmailConfirmation(User user, Email newEmail) throws ValidationException {
         Optional<EmailConfirmation> active = emailConfirmationRepository.findByUserEmail(user.getEmail());
         if (active.isPresent()) {
-            if (!active.get().isExpired()) throw new ValidationException("PENDING_EMAIL_CONFIRMATION", "Pending email confirmation");
+            if (!active.get().isExpired()) throw new ValidationException("pending.email.confirmation", "Pending email confirmation");
             emailConfirmationRepository.delete(active.get());
         }
         EmailConfirmation emailConfirmation = new EmailConfirmation(newEmail, user, userProperties);

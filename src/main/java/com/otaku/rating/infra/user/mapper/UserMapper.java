@@ -5,6 +5,7 @@ import com.otaku.rating.core.user.model.User;
 import com.otaku.rating.core.user.model.valueobjects.Email;
 import com.otaku.rating.core.user.model.valueobjects.Name;
 import com.otaku.rating.core.user.model.valueobjects.UserName;
+import com.otaku.rating.infra.user.entities.EmailConfirmationEntity;
 import com.otaku.rating.infra.user.entities.UserEntity;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Component;
 public class UserMapper implements Mapper<User, UserEntity> {
     @Override
     public User toModel(UserEntity userEntity) {
+        EmailConfirmationEntity emailConfirmation = userEntity.getEmailConfirmation();
+        boolean active = emailConfirmation == null || emailConfirmation.getNewEmail() != null;
         return User.parseUnsafe(
                 userEntity.getId(),
                 Email.parseUnsafe(userEntity.getEmail()),
@@ -19,7 +22,7 @@ public class UserMapper implements Mapper<User, UserEntity> {
                 Name.parseUnsafe(userEntity.getName()),
                 userEntity.getPassword(),
                 userEntity.getRole(),
-                userEntity.isActive(),
+                active,
                 userEntity.getCreatedAt(),
                 userEntity.getUpdatedAt()
         );
