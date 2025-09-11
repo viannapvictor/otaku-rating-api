@@ -11,12 +11,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class UserInputMapper implements InputMapper<User, UserRegisterDTO> {
-    private final PasswordEncoderServiceImpl passwordEncoderService;
+public class CreateUserMapper implements InputMapper<UserRegister, UserRegisterDTO> {
     
     @Override
-    public User toModel(UserRegisterDTO userRegisterDTO) throws ValidationException {
-        UserRegister userRegister = userRegisterDTO.convertToEntity();
-        return new User(passwordEncoderService, userRegister);
+    public UserRegister toModel(UserRegisterDTO userRegisterDTO) throws ValidationException {
+        return userRegisterDTO.convertToEntity();
     }
 }

@@ -23,12 +23,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private final UserService userService;
     private final OutputMapper<User, UserViewDTO> userOutputMapper;
+    private final InputMapper<UserRegister, UserRegisterDTO> createUserMapper;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserViewDTO>> register(
             @RequestBody UserRegisterDTO userRegisterDTO
     ) throws ValidationException {
-        User createdUser = userService.createUser(userRegisterDTO.convertToEntity());
+        UserRegister userRegister = createUserMapper.toModel(userRegisterDTO);
+        User createdUser = userService.createUser(userRegister);
         UserViewDTO userViewDTO = userOutputMapper.toEntity(createdUser);
         return ApiResponse.success(userViewDTO).createResponse(HttpStatus.CREATED);
     }
