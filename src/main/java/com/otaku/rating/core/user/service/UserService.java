@@ -7,6 +7,7 @@ import com.otaku.rating.core.user.model.valueobjects.Email;
 import com.otaku.rating.core.user.model.valueobjects.Name;
 import com.otaku.rating.core.user.model.valueobjects.Password;
 import com.otaku.rating.core.user.model.valueobjects.UserName;
+import lombok.Getter;
 import org.springframework.data.domain.Page;
 
 import java.util.Optional;
@@ -25,4 +26,5 @@ public interface UserService {
     void logout();
     void confirmEmail(String code, Email currentEmail);
     void updateUserEmail(Email email);
+    ContextService getContext();
 }

@@ -14,8 +14,8 @@ public class LogEmailSender implements EmailSender {
         log.info("[DEV] Email sent to: {}", user.getEmail().getValue());
         log.info("[DEV] Subject: {}", subject);
         log.info("[DEV] Body: {}", message);
-        
-        // Extract and decode confirmation code for DEV testing
+
+        /* This part only exists to confirm the tests in development environment */
         if (message.contains("code=")) {
             String[] parts = message.split("code=");
             if (parts.length > 1) {

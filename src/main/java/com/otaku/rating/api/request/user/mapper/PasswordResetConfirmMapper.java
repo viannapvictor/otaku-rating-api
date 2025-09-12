@@ -1,0 +1,22 @@
+package com.otaku.rating.api.request.user.mapper;
+
+import com.otaku.rating.api.request.user.dto.PasswordResetConfirmDTO;
+import com.otaku.rating.core.generic.exception.ValidationException;
+import com.otaku.rating.core.generic.mapper.InputMapper;
+import com.otaku.rating.core.user.model.PasswordResetConfirm;
+import com.otaku.rating.core.user.model.valueobjects.Password;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class PasswordResetConfirmMapper implements InputMapper<PasswordResetConfirm, PasswordResetConfirmDTO> {
+    
+    @Override
+    public PasswordResetConfirm toModel(PasswordResetConfirmDTO passwordResetConfirmDTO) throws ValidationException {
+        return new PasswordResetConfirm(
+                passwordResetConfirmDTO.getCode(),
+                new Password(passwordResetConfirmDTO.getNewPassword())
+        );
+    }
+}

@@ -9,6 +9,7 @@ import com.otaku.rating.core.user.model.valueobjects.Name;
 import com.otaku.rating.core.user.model.valueobjects.Password;
 import com.otaku.rating.core.user.model.valueobjects.UserName;
 import com.otaku.rating.core.user.repository.UserRepository;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -19,10 +20,11 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    
+
+    @Getter
+    private final ContextService context;
     private final UserRepository userRepository;
     private final PasswordEncoderServiceImpl passwordEncoderService;
-    private final ContextService context;
     private final EmailConfirmationService emailConfirmationService;
     private final TokenService tokenService;
     private final PasswordResetService  passwordResetService;
@@ -49,7 +51,7 @@ public class UserServiceImpl implements UserService {
                 savedUser.getName(),
                 savedUser.getEncryptedPassword(),
                 savedUser.getRole(),
-                savedUser.isActive(),
+                false,
                 savedUser.getCreatedAt(),
                 savedUser.getUpdatedAt()
         );
