@@ -23,7 +23,7 @@ public class PageResponse<T> {
         return new PageResponse<>(
                 content,
                 page.getSize(),
-                page.getNumber(),
+                page.getNumber() + 1,
                 page.getTotalElements(),
                 page.getTotalPages(),
                 page.isFirst(),
