@@ -1,8 +1,7 @@
 package com.otaku.rating.infra.user.repository;
 
-import com.otaku.rating.infra.user.entities.UserEntity;
+import com.otaku.rating.infra.user.persistence.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 

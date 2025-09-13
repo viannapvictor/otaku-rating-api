@@ -4,7 +4,6 @@ import com.otaku.rating.api.config.SecurityConfig;
 import com.otaku.rating.api.request.user.dto.*;
 import com.otaku.rating.api.response.ApiResponse;
 import com.otaku.rating.api.response.user.dto.UserViewDTO;
-import com.otaku.rating.core.generic.exception.ValidationException;
 import com.otaku.rating.core.generic.mapper.InputMapper;
 import com.otaku.rating.core.generic.mapper.OutputMapper;
 import com.otaku.rating.core.user.model.AuthTokens;
@@ -13,11 +12,10 @@ import com.otaku.rating.core.user.model.PasswordResetConfirm;
 import com.otaku.rating.core.user.model.User;
 import com.otaku.rating.core.user.model.UserLogin;
 import com.otaku.rating.core.user.model.UserRegister;
-import com.otaku.rating.core.user.model.valueobjects.Email;
-import com.otaku.rating.core.user.model.valueobjects.Password;
+import com.otaku.rating.core.user.model.valueobject.Email;
 import com.otaku.rating.core.user.service.PasswordResetService;
 import com.otaku.rating.core.user.service.UserService;
-import com.otaku.rating.core.user.service.decorators.NeedsUserContext;
+import com.otaku.rating.core.user.decorator.NeedsUserContext;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -43,9 +41,7 @@ public class AuthController {
     private final PasswordResetService passwordResetService;
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<UserViewDTO>> register(
-            @RequestBody UserRegisterDTO userRegisterDTO
-    ) throws ValidationException {
+    public ResponseEntity<ApiResponse<UserViewDTO>> register(@RequestBody UserRegisterDTO userRegisterDTO) {
         UserRegister userRegister = createUserMapper.toModel(userRegisterDTO);
         User createdUser = userService.createUser(userRegister);
         UserViewDTO userViewDTO = userOutputMapper.toEntity(createdUser);
@@ -56,7 +52,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Object>> confirmEmail(
             @RequestBody EmailConfirmationRequestDTO emailConfirmationRequestDto,
             HttpServletResponse response
-    ) throws ValidationException {
+    ) {
         EmailConfirmationRequest emailConfirmationRequest = emailConfirmationRequestMapper.toModel(emailConfirmationRequestDto);
         userService.confirmEmail(
                 emailConfirmationRequest.getCode(),
@@ -75,10 +71,7 @@ public class AuthController {
 
     @PostMapping("/login")
     @NeedsUserContext
-    public ResponseEntity<ApiResponse<Object>> login(
-            @RequestBody UserLoginDTO userLoginDTO,
-            HttpServletResponse response
-    ) throws ValidationException {
+    public ResponseEntity<ApiResponse<Object>> login(@RequestBody UserLoginDTO userLoginDTO, HttpServletResponse response) {
         UserLogin userLogin = userLoginMapper.toModel(userLoginDTO);
         AuthTokens authTokens = userService.login(
                 userLogin.getEmail(),
@@ -108,7 +101,7 @@ public class AuthController {
 
     @PostMapping("/refresh-tokens")
     @NeedsUserContext
-    public ResponseEntity<ApiResponse<Object>> refreshTokens(HttpServletResponse response) throws ValidationException {
+    public ResponseEntity<ApiResponse<Object>> refreshTokens(HttpServletResponse response) {
         AuthTokens authTokens = userService.getContext().refreshTokens();
 
         Cookie refreshCookie = securityConfig.createRefreshTokenCookie(authTokens.getRefreshToken());
@@ -121,8 +114,7 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<ApiResponse<Object>> requestPasswordReset(
-            @RequestBody PasswordResetRequestDTO requestDTO) throws ValidationException {
+    public ResponseEntity<ApiResponse<Object>> requestPasswordReset(@RequestBody PasswordResetRequestDTO requestDTO) {
         Email email = passwordResetRequestMapper.toModel(requestDTO);
         User user = userService.findByEmail(email);
         passwordResetService.createPasswordResetRequest(user);
@@ -131,9 +123,7 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<ApiResponse<Object>> resetPassword(
-            @RequestBody PasswordResetConfirmDTO confirmDTO
-    ) throws ValidationException {
+    public ResponseEntity<ApiResponse<Object>> resetPassword(@RequestBody PasswordResetConfirmDTO confirmDTO) {
         PasswordResetConfirm passwordResetConfirm = passwordResetConfirmMapper.toModel(confirmDTO);
         userService.resetPassword(
                 passwordResetConfirm.getCode(),

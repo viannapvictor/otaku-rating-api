@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication(scanBasePackages = "com.otaku.rating")
 @EnableJpaRepositories(basePackages = "com.otaku.rating.infra.**.repository")
-@EntityScan(basePackages = "com.otaku.rating.infra.**.entities")
+@EntityScan(basePackages = "com.otaku.rating.infra.**.persistence")
 public class OtakuRatingApiApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(OtakuRatingApiApplication.class, args);

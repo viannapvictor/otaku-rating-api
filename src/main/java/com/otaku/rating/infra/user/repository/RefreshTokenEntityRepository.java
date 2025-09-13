@@ -1,6 +1,6 @@
 package com.otaku.rating.infra.user.repository;
 
-import com.otaku.rating.infra.user.entities.RefreshTokenEntity;
+import com.otaku.rating.infra.user.persistence.RefreshTokenEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

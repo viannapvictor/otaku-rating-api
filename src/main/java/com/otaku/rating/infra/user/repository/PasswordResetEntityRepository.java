@@ -1,7 +1,7 @@
 package com.otaku.rating.infra.user.repository;
 
-import com.otaku.rating.infra.user.entities.PasswordResetEntity;
-import com.otaku.rating.infra.user.entities.UserEntity;
+import com.otaku.rating.infra.user.persistence.PasswordResetEntity;
+import com.otaku.rating.infra.user.persistence.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

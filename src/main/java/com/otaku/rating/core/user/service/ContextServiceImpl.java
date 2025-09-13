@@ -1,12 +1,14 @@
 package com.otaku.rating.core.user.service;
 
 import com.otaku.rating.core.generic.exception.ValidationException;
+import com.otaku.rating.core.user.exception.AuthenticationRequiredException;
+import com.otaku.rating.core.user.exception.RefreshTokenExpiredException;
 import com.otaku.rating.core.user.model.AccessToken;
 import com.otaku.rating.core.user.model.AuthTokens;
 import com.otaku.rating.core.user.model.RefreshToken;
 import com.otaku.rating.core.user.model.User;
 import com.otaku.rating.core.user.repository.UserRepository;
-import com.otaku.rating.core.user.service.decorators.NeedsUserContext;
+import com.otaku.rating.core.user.decorator.NeedsUserContext;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
@@ -74,18 +76,18 @@ public class ContextServiceImpl implements ContextService {
 
     @Override
     @NonNull
-    public User getUserOrThrow() throws ValidationException {
+    public User getUserOrThrow() {
         if (user == null) {
-            throw new ValidationException("access.not.authorized", "Unauthorized access");
+            throw new AuthenticationRequiredException();
         }
         return user;
     }
 
     @Override
-    public AuthTokens refreshTokens() throws ValidationException {
+    public AuthTokens refreshTokens() {
         String refreshToken = getCookieValue("refresh_token");
         if (refreshToken == null) {
-            throw new ValidationException("token.expired", "Refresh token expired");
+            throw new RefreshTokenExpiredException();
         }
         RefreshToken updatedRefreshToken = tokenService.increaseRefreshTokenExpiration(refreshToken);
         AccessToken newAccessToken = tokenService.createAccessToken(updatedRefreshToken);
@@ -94,9 +96,9 @@ public class ContextServiceImpl implements ContextService {
     }
 
     @Override
-    public void throwIfNotAuthenticated() throws ValidationException {
+    public void throwIfNotAuthenticated() {
         if (!isAuthenticated()) {
-            throw new ValidationException("access.not.authorized", "Unauthorized access");
+            throw new AuthenticationRequiredException();
         }
     }
 

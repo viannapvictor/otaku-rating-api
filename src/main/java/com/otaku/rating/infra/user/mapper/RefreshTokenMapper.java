@@ -2,8 +2,8 @@ package com.otaku.rating.infra.user.mapper;
 
 import com.otaku.rating.core.generic.mapper.Mapper;
 import com.otaku.rating.core.user.model.RefreshToken;
-import com.otaku.rating.infra.user.entities.RefreshTokenEntity;
-import com.otaku.rating.infra.user.entities.UserEntity;
+import com.otaku.rating.infra.user.persistence.RefreshTokenEntity;
+import com.otaku.rating.infra.user.persistence.UserEntity;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -3,14 +3,11 @@ package com.otaku.rating.core.user.service;
 import com.otaku.rating.core.user.model.AuthTokens;
 import com.otaku.rating.core.user.model.User;
 import com.otaku.rating.core.user.model.UserRegister;
-import com.otaku.rating.core.user.model.valueobjects.Email;
-import com.otaku.rating.core.user.model.valueobjects.Name;
-import com.otaku.rating.core.user.model.valueobjects.Password;
-import com.otaku.rating.core.user.model.valueobjects.UserName;
-import lombok.Getter;
+import com.otaku.rating.core.user.model.valueobject.Email;
+import com.otaku.rating.core.user.model.valueobject.Name;
+import com.otaku.rating.core.user.model.valueobject.Password;
+import com.otaku.rating.core.user.model.valueobject.UserName;
 import org.springframework.data.domain.Page;
-
-import java.util.Optional;
 
 public interface UserService {
     User createUser(UserRegister userRegister);

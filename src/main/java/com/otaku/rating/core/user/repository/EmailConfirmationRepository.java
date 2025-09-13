@@ -2,7 +2,7 @@ package com.otaku.rating.core.user.repository;
 
 import com.otaku.rating.core.user.model.EmailConfirmation;
 import com.otaku.rating.core.user.model.User;
-import com.otaku.rating.core.user.model.valueobjects.Email;
+import com.otaku.rating.core.user.model.valueobject.Email;
 
 import java.time.Instant;
 import java.util.List;

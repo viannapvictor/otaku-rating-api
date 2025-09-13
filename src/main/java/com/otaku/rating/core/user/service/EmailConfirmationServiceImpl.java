@@ -1,10 +1,12 @@
 package com.otaku.rating.core.user.service;
 
-import com.otaku.rating.core.generic.exception.ValidationException;
+import com.otaku.rating.core.user.exception.EmailConfirmationAlreadyConfirmedException;
+import com.otaku.rating.core.user.exception.EmailConfirmationCodeInvalidException;
+import com.otaku.rating.core.user.exception.EmailConfirmationPendingException;
 import com.otaku.rating.core.user.model.EmailConfirmation;
 import com.otaku.rating.core.user.model.User;
 import com.otaku.rating.core.user.model.properties.user.UserProperties;
-import com.otaku.rating.core.user.model.valueobjects.Email;
+import com.otaku.rating.core.user.model.valueobject.Email;
 import com.otaku.rating.core.user.repository.EmailConfirmationRepository;
 import com.otaku.rating.core.user.service.messaging.EmailSender;
 import lombok.RequiredArgsConstructor;
@@ -27,14 +29,14 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
 
     @Override
     @Transactional
-    public EmailConfirmation confirmEmail(String code, Email currentEmail) throws ValidationException {
+    public EmailConfirmation confirmEmail(String code, Email currentEmail) {
         if (currentEmail == null) {
             throw new IllegalArgumentException("The current email must not be empty.");
         }
         EmailConfirmation emailConfirmation = emailConfirmationRepository.findByUserEmail(currentEmail)
-                .orElseThrow(() -> new ValidationException("email.already.confirmed", "Email already confirmed."));
+                .orElseThrow(EmailConfirmationAlreadyConfirmedException::new);
         if (emailConfirmation.isExpired() || !emailConfirmation.getCode().matches(code)) {
-            throw new ValidationException("confirmation.token.invalid", "Email confirmation code is invalid");
+            throw new EmailConfirmationCodeInvalidException();
         }
         emailConfirmationRepository.delete(emailConfirmation);
         return emailConfirmation;
@@ -47,10 +49,10 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
 
     @Override
     @Transactional
-    public EmailConfirmation addEmailConfirmation(User user, Email newEmail) throws ValidationException {
+    public EmailConfirmation addEmailConfirmation(User user, Email newEmail) {
         Optional<EmailConfirmation> active = emailConfirmationRepository.findByUserEmail(user.getEmail());
         if (active.isPresent()) {
-            if (!active.get().isExpired()) throw new ValidationException("pending.email.confirmation", "Pending email confirmation");
+            if (!active.get().isExpired()) throw new EmailConfirmationPendingException();
             emailConfirmationRepository.delete(active.get());
         }
         EmailConfirmation emailConfirmation = new EmailConfirmation(newEmail, user, userProperties);
@@ -63,8 +65,7 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
         String body = String.format(
                 messages.getString(bodyKey),
                 user.getName().getValue(),
-                user.getEmail().getValue(),
-                savedEmailConfirmation.getCode().encodeToUrlCode(),
+                savedEmailConfirmation.getCode(),
                 userProperties.getEmailConfirmationExpirationMinutes()
         );
         emailSender.sendEmail(user, subject, body);

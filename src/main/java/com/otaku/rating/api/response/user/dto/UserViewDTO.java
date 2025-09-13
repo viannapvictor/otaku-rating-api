@@ -1,6 +1,6 @@
 package com.otaku.rating.api.response.user.dto;
 
-import com.otaku.rating.core.user.model.valueobjects.EnumUserRole;
+import com.otaku.rating.core.user.model.valueobject.EnumUserRole;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

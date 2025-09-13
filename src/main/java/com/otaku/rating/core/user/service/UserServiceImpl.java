@@ -1,13 +1,12 @@
 package com.otaku.rating.core.user.service;
 
-import com.otaku.rating.core.generic.exception.NotFoundException;
-import com.otaku.rating.core.generic.exception.ValidationException;
+import com.otaku.rating.core.user.exception.*;
 import com.otaku.rating.core.user.model.*;
 import com.otaku.rating.core.user.model.properties.user.UserProperties;
-import com.otaku.rating.core.user.model.valueobjects.Email;
-import com.otaku.rating.core.user.model.valueobjects.Name;
-import com.otaku.rating.core.user.model.valueobjects.Password;
-import com.otaku.rating.core.user.model.valueobjects.UserName;
+import com.otaku.rating.core.user.model.valueobject.Email;
+import com.otaku.rating.core.user.model.valueobject.Name;
+import com.otaku.rating.core.user.model.valueobject.Password;
+import com.otaku.rating.core.user.model.valueobject.UserName;
 import com.otaku.rating.core.user.repository.UserRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -20,24 +19,23 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-
     @Getter
     private final ContextService context;
     private final UserRepository userRepository;
-    private final PasswordEncoderServiceImpl passwordEncoderService;
+    private final PasswordEncoderService passwordEncoderService;
     private final EmailConfirmationService emailConfirmationService;
     private final TokenService tokenService;
-    private final PasswordResetService  passwordResetService;
+    private final PasswordResetService passwordResetService;
     private final UserProperties userProperties;
 
     @Override
     @Transactional
-    public User createUser(UserRegister userRegister) throws ValidationException {
+    public User createUser(UserRegister userRegister) {
         if (userRepository.existsByEmail(userRegister.getEmail())) {
-            throw new ValidationException("email.already.exists", "Email already exists");
+            throw new EmailAlreadyExistsException();
         }
         if (userRepository.existsByUserName(userRegister.getUserName())) {
-            throw new ValidationException("username.already.exists", "Username already exists");
+            throw new UserNameAlreadyExistsException();
         }
         
         User user = new User(passwordEncoderService, userRegister);
@@ -63,34 +61,31 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findById(long id) throws NotFoundException {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("user.not.exists", "There's no user for this id."));
+    public User findById(long id) {
+        return userRepository.findById(id).orElseThrow(UserNotFoundException::new);
     }
 
     @Override
     public User findByEmail(Email email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("user.not.exists", "There's no user for this email."));
+        return userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
     }
 
     @Override
     public User findByUserName(UserName userName) {
-        return userRepository.findByUserName(userName)
-                .orElseThrow(() -> new NotFoundException("user.not.exists", "There's no user for this username."));
+        return userRepository.findByUserName(userName).orElseThrow(UserNotFoundException::new);
     }
 
     @Override
-    public AuthTokens login(Email email, Password password) throws ValidationException {
+    public AuthTokens login(Email email, Password password) {
         if (context.isAuthenticated()) {
-            throw new ValidationException("user.already.logged", "User already logged");
+            throw new AlreadyAuthenticatedException();
         }
         User user = userRepository.findByEmail(email).orElse(null);
         if (user == null || !passwordEncoderService.checkPassword(user, password)) {
-            throw new ValidationException("user.unauthorized", "User not authorized.");
+            throw new LoginWrongCredentialsException();
         }
         if (!user.isActive()) {
-            throw new ValidationException("user.email.pending.validation", "Email validation is pending.");
+            throw new EmailConfirmationPendingException();
         }
         RefreshToken refreshToken = tokenService.createRefreshToken(user);
         AccessToken accessToken = tokenService.createAccessToken(refreshToken);
@@ -100,11 +95,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void resetPassword(String code, Password newPassword) throws NotFoundException {
+    public void resetPassword(String code, Password newPassword) {
         PasswordReset passwordReset = passwordResetService.resetPassword(code);
         Optional<User> optionalUser = userRepository.findById(passwordReset.getUserId());
         if (optionalUser.isEmpty()) {
-            throw new NotFoundException("user.not.exists", "There's no user for this id.");
+            throw new UserNotFoundException();
         }
         User user = optionalUser.get();
         user.setPassword(passwordEncoderService, newPassword);
@@ -125,7 +120,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void confirmEmail(String code, Email currentEmail) throws NotFoundException {
+    public void confirmEmail(String code, Email currentEmail) {
         User user = null;
         if (currentEmail == null) {
             user = context.getUserOrThrow();
@@ -134,8 +129,7 @@ public class UserServiceImpl implements UserService {
         EmailConfirmation emailConfirmation = emailConfirmationService.confirmEmail(code, currentEmail);
         if (emailConfirmation.getNewEmail() == null) return;
         if (user == null) {
-            user = userRepository.findById(emailConfirmation.getUserId())
-                    .orElseThrow(() -> new NotFoundException("user.not.exists", "There's no user for this id."));
+            user = userRepository.findById(emailConfirmation.getUserId()).orElseThrow(UserNotFoundException::new);
         }
         user.setEmail(emailConfirmation.getNewEmail());
         userRepository.save(user);
@@ -143,14 +137,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User updateUserProfile(Name name, UserName userName) throws NotFoundException{
+    public User updateUserProfile(Name name, UserName userName) {
         User user = context.getUserOrThrow();
         if (name != null) {
             user.setName(name);
         }
         if (userName != null) {
             if (!user.getUserName().equals(userName) && userRepository.existsByUserName(userName)) {
-                throw new NotFoundException("user.not.exists", "There's no user for this email.");
+                throw new UserNameAlreadyExistsException();
             }
             user.setUserName(userName);
         }
@@ -159,13 +153,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updateUserPassword(Password oldPassword, Password newPassword) throws ValidationException {
+    public void updateUserPassword(Password oldPassword, Password newPassword) {
         User user = context.getUserOrThrow();
         if (oldPassword == null || newPassword == null) {
-            throw new ValidationException("password.cannot.null", "Password cannot be null.");
+            throw new IllegalArgumentException("Cannot pass a null password object.");
         }
         if (!passwordEncoderService.checkPassword(user, oldPassword)) {
-            throw new ValidationException("invalid.old.password", "The old password not match.");
+            throw new OldPasswordWrongException();
         }
         user.setPassword(passwordEncoderService, newPassword);
         userRepository.save(user);
@@ -173,17 +167,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updateUserEmail(Email email) throws ValidationException {
+    public void updateUserEmail(Email email) {
         User user = context.getUserOrThrow();
-
         if (email == null) {
-            throw new ValidationException("email.cannot.null", "Email cannot be null.");
+            throw new IllegalArgumentException("Cannot pass a null email object");
         }
         if (user.getEmail().equals(email)) {
             return;
         }
         if (userRepository.existsByEmail(email)) {
-            throw new ValidationException("username.already.exists", "Username already exists");
+            throw new EmailAlreadyExistsException();
         }
         emailConfirmationService.addEmailConfirmation(user, email);
     }

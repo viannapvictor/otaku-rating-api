@@ -2,11 +2,11 @@ package com.otaku.rating.infra.user.mapper;
 
 import com.otaku.rating.core.generic.mapper.Mapper;
 import com.otaku.rating.core.user.model.User;
-import com.otaku.rating.core.user.model.valueobjects.Email;
-import com.otaku.rating.core.user.model.valueobjects.Name;
-import com.otaku.rating.core.user.model.valueobjects.UserName;
-import com.otaku.rating.infra.user.entities.EmailConfirmationEntity;
-import com.otaku.rating.infra.user.entities.UserEntity;
+import com.otaku.rating.core.user.model.valueobject.Email;
+import com.otaku.rating.core.user.model.valueobject.Name;
+import com.otaku.rating.core.user.model.valueobject.UserName;
+import com.otaku.rating.infra.user.persistence.EmailConfirmationEntity;
+import com.otaku.rating.infra.user.persistence.UserEntity;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -17,9 +17,9 @@ public class UserMapper implements Mapper<User, UserEntity> {
         boolean active = emailConfirmation == null || emailConfirmation.getNewEmail() != null;
         return User.parseUnsafe(
                 userEntity.getId(),
-                Email.parseUnsafe(userEntity.getEmail()),
-                UserName.parseUnsafe(userEntity.getUserName()),
-                Name.parseUnsafe(userEntity.getName()),
+                Email.valueOfUnsafe(userEntity.getEmail()),
+                UserName.valueOfUnsafe(userEntity.getUserName()),
+                Name.valueOfUnsafe(userEntity.getName()),
                 userEntity.getPassword(),
                 userEntity.getRole(),
                 active,

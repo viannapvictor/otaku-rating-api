@@ -1,6 +1,6 @@
 package com.otaku.rating.core.user.service;
 
-import com.otaku.rating.core.generic.exception.ValidationException;
+import com.otaku.rating.core.user.exception.RefreshTokenExpiredException;
 import com.otaku.rating.core.user.model.AccessToken;
 import com.otaku.rating.core.user.model.RefreshToken;
 import com.otaku.rating.core.user.model.User;
@@ -29,12 +29,12 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
-    public AccessToken createAccessToken(RefreshToken refreshToken) throws ValidationException {
+    public AccessToken createAccessToken(RefreshToken refreshToken) {
         return new AccessToken(refreshToken, userProperties, accessSecretKey, refreshSecretKey);
     }
 
     @Override
-    public AccessToken retrieveAccessToken(String accessToken) throws ValidationException {
+    public AccessToken retrieveAccessToken(String accessToken) {
         return new AccessToken(accessToken, accessSecretKey);
     }
 
@@ -45,10 +45,10 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
-    public RefreshToken increaseRefreshTokenExpiration(String refreshToken) throws ValidationException {
+    public RefreshToken increaseRefreshTokenExpiration(String refreshToken) {
         RefreshToken refreshTokenFromDatabase = refreshTokenRepository.findByCode(refreshToken).orElse(null);
         if (refreshTokenFromDatabase == null) {
-            throw new ValidationException("REFRESH_TOKEN_EXPIRED", "Refresh token expired");
+            throw new RefreshTokenExpiredException();
         }
         refreshTokenFromDatabase.increaseExpiration(userProperties);
         return refreshTokenRepository.save(refreshTokenFromDatabase);

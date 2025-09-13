@@ -1,6 +1,10 @@
 package com.otaku.rating.core.user.model;
 
 import com.otaku.rating.core.generic.exception.ValidationException;
+import com.otaku.rating.core.user.exception.AccessTokenExpiredException;
+import com.otaku.rating.core.user.exception.AccessTokenInvalidException;
+import com.otaku.rating.core.user.exception.RefreshTokenExpiredException;
+import com.otaku.rating.core.user.exception.RefreshTokenInvalidException;
 import com.otaku.rating.core.user.model.properties.user.UserProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -22,7 +26,7 @@ public final class AccessToken {
             UserProperties userProperties,
             SecretKey accessSecretKey,
             SecretKey refreshSecretKey
-    ) throws ValidationException {
+    ) {
         if (userProperties == null) {
             throw new IllegalArgumentException("The user properties must not be null.");
         }
@@ -33,10 +37,10 @@ public final class AccessToken {
             throw new IllegalArgumentException("The refresh secret key must not be null.");
         }
         if (refreshToken == null) {
-            throw new ValidationException("REFRESH_TOKEN_INVALID", "Refresh token is required.");
+            throw new RefreshTokenInvalidException();
         }
         if (refreshToken.isExpired()) {
-            throw new ValidationException("REFRESH_TOKEN_EXPIRED", "Refresh token has expired.");
+            throw new RefreshTokenExpiredException();
         }
         Claims claims = refreshToken.getClaims(refreshSecretKey);
         Instant issuedAt = Instant.now();
@@ -53,12 +57,12 @@ public final class AccessToken {
                 .compact();
     }
 
-    public AccessToken(String token, SecretKey secretKey) throws ValidationException {
+    public AccessToken(String token, SecretKey secretKey) {
         if (secretKey == null) {
             throw new IllegalArgumentException("The secret key must not be null.");
         }
         if (token == null) {
-            throw new ValidationException("ACCESS_TOKEN_INVALID", "Access token is required.");
+            throw new AccessTokenInvalidException();
         }
         try {
             Claims claims = Jwts.parser()
@@ -67,15 +71,15 @@ public final class AccessToken {
                     .parseSignedClaims(token)
                     .getPayload();
             if (claims.getExpiration() == null) {
-                throw new ValidationException("ACCESS_TOKEN_INVALID", "Access token expiration is required.");
+                throw new AccessTokenInvalidException();
             }
             validateCommonClaims(claims);
             this.code = token;
             this.userId = Long.parseLong(claims.getSubject());
         } catch (ExpiredJwtException e) {
-            throw new ValidationException("ACCESS_TOKEN_EXPIRED", "Access token has expired.");
+            throw new AccessTokenExpiredException();
         } catch (JwtException e) {
-            throw new ValidationException("ACCESS_TOKEN_INVALID", "Access token is invalid.");
+            throw new AccessTokenInvalidException();
         }
     }
 
@@ -84,19 +88,19 @@ public final class AccessToken {
         this.userId = userId;
     }
 
-    private static void validateCommonClaims(Claims claims) throws ValidationException {
+    private static void validateCommonClaims(Claims claims) {
         try {
             Long.parseLong(claims.getSubject());
             if (claims.get("userName") == null ||
                     claims.get("name") == null ||
                     claims.get("email") == null ||
                     claims.getIssuedAt() == null) {
-                throw new ValidationException("ACCESS_TOKEN_INVALID", "Access token is missing required claims.");
+                throw new AccessTokenInvalidException();
             }
         } catch (ValidationException e) {
             throw e;
         } catch (Exception e) {
-            throw new ValidationException("ACCESS_TOKEN_INVALID", "Access token format is invalid.");
+            throw new AccessTokenInvalidException();
         }
     }
 

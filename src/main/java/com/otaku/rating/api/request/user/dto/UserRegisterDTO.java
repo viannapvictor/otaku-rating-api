@@ -1,6 +1,5 @@
 package com.otaku.rating.api.request.user.dto;
 
-import com.otaku.rating.core.generic.exception.ValidationException;
 import com.otaku.rating.core.user.model.UserRegister;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,7 +14,7 @@ public final class UserRegisterDTO {
     private String email;
     private String password;
 
-    public UserRegister convertToEntity() throws ValidationException {
+    public UserRegister convertToEntity() {
         return new UserRegister(userName, name, email, password);
     }
 }

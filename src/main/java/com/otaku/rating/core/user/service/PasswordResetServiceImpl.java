@@ -1,6 +1,7 @@
 package com.otaku.rating.core.user.service;
 
-import com.otaku.rating.core.generic.exception.ValidationException;
+import com.otaku.rating.core.user.exception.PasswordResetCodeInvalidException;
+import com.otaku.rating.core.user.exception.PasswordResetPendingException;
 import com.otaku.rating.core.user.model.PasswordReset;
 import com.otaku.rating.core.user.model.User;
 import com.otaku.rating.core.user.model.properties.user.UserProperties;
@@ -24,10 +25,10 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
     @Override
     @Transactional
-    public PasswordReset createPasswordResetRequest(User user) throws ValidationException {
+    public PasswordReset createPasswordResetRequest(User user) {
         Optional<PasswordReset> active = passwordResetRepository.findByUser(user);
         if (active.isPresent()) {
-            if (!active.get().isExpired()) throw new ValidationException("PASSWORD_RESET_REQUEST_EXISTS", "Password reset request already exists");
+            if (!active.get().isExpired()) throw new PasswordResetPendingException();
             passwordResetRepository.delete(active.get());
         }
         PasswordReset passwordReset = new PasswordReset(user, userProperties);
@@ -37,7 +38,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         String body = String.format(
                 messages.getString("message.password.reset.body"),
                 user.getName().getValue(),
-                savedPasswordReset.getCode().encodeToUrlCode(),
+                savedPasswordReset.getCode(),
                 userProperties.getResetPasswordConfirmationExpirationMinutes()
         );
         emailSender.sendEmail(user, subject, body);
@@ -46,10 +47,10 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
     @Override
     @Transactional
-    public PasswordReset resetPassword(String code) throws ValidationException {
+    public PasswordReset resetPassword(String code) {
         Optional<PasswordReset> passwordResetOptional = passwordResetRepository.findByCode(code);
         if (passwordResetOptional.isEmpty() || passwordResetOptional.get().isExpired()) {
-            throw new ValidationException("PASSWORD_RESET_CODE_INVALID", "Password reset code is invalid");
+            throw new PasswordResetCodeInvalidException();
         }
         PasswordReset passwordReset = passwordResetOptional.get();
         passwordResetRepository.delete(passwordReset);

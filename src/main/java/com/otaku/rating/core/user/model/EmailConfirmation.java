@@ -1,8 +1,8 @@
 package com.otaku.rating.core.user.model;
 
 import com.otaku.rating.core.user.model.properties.user.UserProperties;
-import com.otaku.rating.core.user.model.valueobjects.ConfirmationCode;
-import com.otaku.rating.core.user.model.valueobjects.Email;
+import com.otaku.rating.core.user.model.valueobject.ConfirmationCode;
+import com.otaku.rating.core.user.model.valueobject.Email;
 import lombok.Getter;
 
 import java.time.Duration;
