@@ -6,7 +6,7 @@ import com.otaku.rating.core.user.model.User;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UserOutputMapper implements OutputMapper<User, UserViewDTO> {
+public class UserViewOutputMapper implements OutputMapper<User, UserViewDTO> {
     
     @Override
     public UserViewDTO toEntity(User user) {
