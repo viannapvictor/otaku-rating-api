@@ -18,17 +18,17 @@ public class UserName {
 
     public UserName(String userName) throws ValidationException {
         if (userName == null) {
-            throw new ValidationException("USER_NAME_NULL", "User name cannot be null");
+            throw new ValidationException("user.invalid.username", "User name cannot be null");
         }
         if (userName.length() < MIN_LENGTH || userName.length() > MAX_LENGTH) {
-            throw new ValidationException("USER_NAME_INVALID_LENGTH", 
+            throw new ValidationException("user.invalid.username.length",
                 String.format("User name length must be between %d and %d characters", MIN_LENGTH, MAX_LENGTH));
         }
         if (userName.charAt(0) == '-' || userName.charAt(userName.length() - 1) == '-') {
-            throw new ValidationException("USER_NAME_INVALID_FORMAT", "User name cannot start or end with '-'");
+            throw new ValidationException("user.invalid.username.format", "User name cannot start or end with '-'");
         }
         if (userNameHasInvalidChars(userName)) {
-            throw new ValidationException("USER_NAME_INVALID_CHARACTER", "User name contains invalid characters");
+            throw new ValidationException("user.invalid.username.char", "User name contains invalid characters");
         }
         value = userName;
     }

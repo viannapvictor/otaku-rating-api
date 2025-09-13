@@ -19,17 +19,17 @@ public class Password {
 
     public Password(String password) throws ValidationException {
         if (password == null) {
-            throw new ValidationException("USER_PASSWORD_NULL", "User password cannot be null.");
+            throw new ValidationException("user.password.null", "User password cannot be null.");
         }
         if (password.length() < MIN_LENGTH) {
-            throw new ValidationException("USER_PASSWORD_NULL", "User password cannot be null.");
+            throw new ValidationException("user.password.null", "User password cannot be null.");
         }
         if (passwordHasInvalidChars(password)) {
-            throw new ValidationException("USER_INVALID_PASSWORD", "User password has invalid characters.");
+            throw new ValidationException("user.invalid.password", "User password has invalid characters.");
         }
         byte[] bytes = password.getBytes(StandardCharsets.UTF_8);
         if (bytes.length > MAX_BYTES) {
-            throw new ValidationException("USER_INVALID_PASSWORD", "User password has exceeds the maximum allowed bytes.");
+            throw new ValidationException("user.invalid.password", "User password has exceeds the maximum allowed bytes.");
         }
         value = password;
     }
