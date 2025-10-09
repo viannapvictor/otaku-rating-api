@@ -16,7 +16,6 @@ public class UserViewDTO {
     private String name;
     private String email;
     private EnumUserRole role;
-    private boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

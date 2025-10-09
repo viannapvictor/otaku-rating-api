@@ -1,8 +1,6 @@
 package com.otaku.rating.api.controller;
 
-import com.otaku.rating.api.config.SecurityConfig;
 import com.otaku.rating.api.request.generic.PageRequest;
-import com.otaku.rating.api.request.user.dto.UserUpdatePasswordRequestDTO;
 import com.otaku.rating.api.response.ApiResponse;
 import com.otaku.rating.api.response.generic.PageResponse;
 import com.otaku.rating.api.response.user.dto.UserQueryDTO;
@@ -11,15 +9,10 @@ import com.otaku.rating.api.response.user.dto.UserViewDTO;
 import com.otaku.rating.core.generic.mapper.InputMapper;
 import com.otaku.rating.core.generic.mapper.OutputMapper;
 import com.otaku.rating.core.user.model.User;
-import com.otaku.rating.api.request.user.dto.UserUpdateEmailRequestDTO;
-import com.otaku.rating.core.user.model.UserUpdateEmailRequest;
 import com.otaku.rating.core.user.model.UserUpdateInfoRequest;
-import com.otaku.rating.core.user.model.UserUpdatePasswordRequest;
 import com.otaku.rating.core.user.model.valueobject.UserName;
 import com.otaku.rating.core.user.service.UserService;
 import com.otaku.rating.core.user.decorator.NeedsUserContext;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -34,12 +27,9 @@ import java.util.List;
 @NeedsUserContext
 public class UserController {
     private final UserService userService;
-    private final SecurityConfig securityConfig;
     private final OutputMapper<User, UserViewDTO> userOutputMapper;
     private final OutputMapper<User, UserQueryDTO> userQueryViewMapper;
     private final InputMapper<UserUpdateInfoRequest, UserUpdateInfoRequestDTO> userUpdateInfoRequestMapper;
-    private final InputMapper<UserUpdateEmailRequest, UserUpdateEmailRequestDTO> userUpdateEmailRequestMapper;
-    private final InputMapper<UserUpdatePasswordRequest, UserUpdatePasswordRequestDTO> userUpdatePasswordRequestMapper;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<UserViewDTO>>> getUsersByPage(@ModelAttribute PageRequest pageRequest) {
@@ -74,12 +64,8 @@ public class UserController {
     }
 
     @DeleteMapping("/me")
-    public ResponseEntity<ApiResponse<Object>> deleteSelf(HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<Object>> deleteSelf() {
         userService.deleteUser(userService.getContext().getUserOrThrow());
-        Cookie refreshCookie = securityConfig.createRefreshTokenCookie(null);
-        Cookie accessCookie = securityConfig.createAccessTokenCookie(null);
-        response.addCookie(refreshCookie);
-        response.addCookie(accessCookie);
         return ApiResponse.success(null).createResponse(HttpStatus.OK);
     }
 
@@ -92,28 +78,5 @@ public class UserController {
         );
         UserViewDTO userViewDTO = userOutputMapper.toEntity(updatedUser);
         return ApiResponse.success(userViewDTO).createResponse(HttpStatus.OK);
-    }
-
-    @PutMapping("/me/email")
-    public ResponseEntity<ApiResponse<Object>> updateEmail(@RequestBody UserUpdateEmailRequestDTO requestDTO) {
-        UserUpdateEmailRequest request = userUpdateEmailRequestMapper.toModel(requestDTO);
-        userService.updateUserEmail(request.getEmail());
-        return ApiResponse.success(null).createResponse(HttpStatus.OK);
-    }
-
-    @PutMapping("/me/password")
-    public ResponseEntity<ApiResponse<Object>> updatePassword(
-            @RequestBody UserUpdatePasswordRequestDTO requestDTO,
-            HttpServletResponse response
-    ) {
-        UserUpdatePasswordRequest dto = userUpdatePasswordRequestMapper.toModel(requestDTO);
-        userService.updateUserPassword(dto.getOldPassword(), dto.getNewPassword());
-        Cookie refreshCookie = securityConfig.createRefreshTokenCookie(null);
-        Cookie accessCookie = securityConfig.createAccessTokenCookie(null);
-
-        response.addCookie(refreshCookie);
-        response.addCookie(accessCookie);
-
-        return ApiResponse.success(null).createResponse(HttpStatus.OK);
     }
 }

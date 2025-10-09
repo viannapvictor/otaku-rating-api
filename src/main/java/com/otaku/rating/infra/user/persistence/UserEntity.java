@@ -10,7 +10,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity(name = "User")
 @Builder
@@ -38,31 +37,16 @@ public class UserEntity {
     
     @Column(name = "email", unique = true, nullable = false, length = Email.MAX_LENGTH)
     private String email;
-    
-    @Column(name = "password", nullable = false)
-    private String password;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private EnumUserRole role;
-    
-    @Column(name = "active", nullable = false)
-    private boolean active;
-    
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    
+
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<RefreshTokenEntity> refreshTokens;
-
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true)
-    private EmailConfirmationEntity emailConfirmation;
-
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true)
-    private PasswordResetEntity passwordReset;
 }

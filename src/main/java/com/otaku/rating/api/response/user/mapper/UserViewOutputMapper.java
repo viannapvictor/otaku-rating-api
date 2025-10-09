@@ -16,7 +16,6 @@ public class UserViewOutputMapper implements OutputMapper<User, UserViewDTO> {
                 user.getName().getValue(),
                 user.getEmail().getValue(),
                 user.getRole(),
-                user.isActive(),
                 user.getCreatedAt(),
                 user.getUpdatedAt()
         );

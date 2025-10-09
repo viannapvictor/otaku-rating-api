@@ -2,10 +2,8 @@ package com.otaku.rating.core.user.service;
 
 import com.otaku.rating.core.user.exception.*;
 import com.otaku.rating.core.user.model.*;
-import com.otaku.rating.core.user.model.properties.user.UserProperties;
 import com.otaku.rating.core.user.model.valueobject.Email;
 import com.otaku.rating.core.user.model.valueobject.Name;
-import com.otaku.rating.core.user.model.valueobject.Password;
 import com.otaku.rating.core.user.model.valueobject.UserName;
 import com.otaku.rating.core.user.repository.UserRepository;
 import lombok.Getter;
@@ -22,11 +20,6 @@ public class UserServiceImpl implements UserService {
     @Getter
     private final ContextService context;
     private final UserRepository userRepository;
-    private final PasswordEncoderService passwordEncoderService;
-    private final EmailConfirmationService emailConfirmationService;
-    private final TokenService tokenService;
-    private final PasswordResetService passwordResetService;
-    private final UserProperties userProperties;
 
     @Override
     @Transactional
@@ -37,22 +30,9 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByUserName(userRegister.getUserName())) {
             throw new UserNameAlreadyExistsException();
         }
-        
-        User user = new User(passwordEncoderService, userRegister);
-        User savedUser = userRepository.save(user);
 
-        emailConfirmationService.addEmailConfirmation(savedUser, null);
-        return User.parseUnsafe(
-                savedUser.getId(),
-                savedUser.getEmail(),
-                savedUser.getUserName(),
-                savedUser.getName(),
-                savedUser.getEncryptedPassword(),
-                savedUser.getRole(),
-                false,
-                savedUser.getCreatedAt(),
-                savedUser.getUpdatedAt()
-        );
+        User user = new User(userRegister);
+        return userRepository.save(user);
     }
 
     @Override
@@ -76,66 +56,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public AuthTokens login(Email email, Password password) {
-        if (context.isAuthenticated()) {
-            throw new AlreadyAuthenticatedException();
-        }
-        User user = userRepository.findByEmail(email).orElse(null);
-        if (user == null || !passwordEncoderService.checkPassword(user, password)) {
-            throw new LoginWrongCredentialsException();
-        }
-        if (!user.isActive()) {
-            throw new EmailConfirmationPendingException();
-        }
-        RefreshToken refreshToken = tokenService.createRefreshToken(user);
-        AccessToken accessToken = tokenService.createAccessToken(refreshToken);
-
-        return new AuthTokens(accessToken, refreshToken);
-    }
-
-    @Override
-    @Transactional
-    public void resetPassword(String code, Password newPassword) {
-        PasswordReset passwordReset = passwordResetService.resetPassword(code);
-        Optional<User> optionalUser = userRepository.findById(passwordReset.getUserId());
-        if (optionalUser.isEmpty()) {
-            throw new UserNotFoundException();
-        }
-        User user = optionalUser.get();
-        user.setPassword(passwordEncoderService, newPassword);
-
-        userRepository.save(user);
-    }
-
-    @Override
-    public void logout() {
-        String refreshToken = context.getCookieValueOrDefault(
-                userProperties.getRefreshTokenCookieName(),
-                null
-        );
-        if (!context.isAuthenticated() || refreshToken == null) return;
-
-        tokenService.deleteRefreshToken(refreshToken);
-    }
-
-    @Override
-    @Transactional
-    public void confirmEmail(String code, Email currentEmail) {
-        User user = null;
-        if (currentEmail == null) {
-            user = context.getUserOrThrow();
-            currentEmail = user.getEmail();
-        }
-        EmailConfirmation emailConfirmation = emailConfirmationService.confirmEmail(code, currentEmail);
-        if (emailConfirmation.getNewEmail() == null) return;
-        if (user == null) {
-            user = userRepository.findById(emailConfirmation.getUserId()).orElseThrow(UserNotFoundException::new);
-        }
-        user.setEmail(emailConfirmation.getNewEmail());
-        userRepository.save(user);
-    }
-
-    @Override
     @Transactional
     public User updateUserProfile(Name name, UserName userName) {
         User user = context.getUserOrThrow();
@@ -153,40 +73,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updateUserPassword(Password oldPassword, Password newPassword) {
-        User user = context.getUserOrThrow();
-        if (oldPassword == null || newPassword == null) {
-            throw new IllegalArgumentException("Cannot pass a null password object.");
-        }
-        if (!passwordEncoderService.checkPassword(user, oldPassword)) {
-            throw new OldPasswordWrongException();
-        }
-        user.setPassword(passwordEncoderService, newPassword);
-        userRepository.save(user);
-    }
-
-    @Override
-    @Transactional
-    public void updateUserEmail(Email email) {
-        User user = context.getUserOrThrow();
-        if (email == null) {
-            throw new IllegalArgumentException("Cannot pass a null email object");
-        }
-        if (user.getEmail().equals(email)) {
-            return;
-        }
-        if (userRepository.existsByEmail(email)) {
-            throw new EmailAlreadyExistsException();
-        }
-        emailConfirmationService.addEmailConfirmation(user, email);
-    }
-
-    @Override
-    @Transactional
     public void deleteUser(User user) {
-        tokenService.revokeAllRefreshTokens(user);
-        passwordResetService.deleteFromUser(user);
-        emailConfirmationService.deleteFromUser(user);
         userRepository.delete(user);
     }
 }

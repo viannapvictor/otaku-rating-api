@@ -1,119 +1,73 @@
 package com.otaku.rating.core.user.service;
 
-import com.otaku.rating.core.generic.exception.ValidationException;
-import com.otaku.rating.core.user.exception.AuthenticationRequiredException;
-import com.otaku.rating.core.user.exception.RefreshTokenExpiredException;
-import com.otaku.rating.core.user.model.AccessToken;
-import com.otaku.rating.core.user.model.AuthTokens;
-import com.otaku.rating.core.user.model.RefreshToken;
+import com.otaku.rating.core.user.exception.LoginWrongCredentialsException;
 import com.otaku.rating.core.user.model.User;
 import com.otaku.rating.core.user.repository.UserRepository;
-import com.otaku.rating.core.user.decorator.NeedsUserContext;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
+import com.otaku.rating.core.user.model.valueobject.Email;
 import lombok.NonNull;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.servlet.HandlerMapping;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
-@Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
+@RequiredArgsConstructor
 public class ContextServiceImpl implements ContextService {
-    private final TokenService tokenService;
-    private final Map<String, String> cookies;
-    private final User user;
-
-    public ContextServiceImpl(
-        UserRepository userRepository,
-        TokenService tokenService,
-        HttpServletRequest request
-    ) {
-        this.tokenService = tokenService;
-        this.cookies = new HashMap<>();
-
-        HandlerMethod handlerMethod = (HandlerMethod)request.getAttribute(
-                HandlerMapping.BEST_MATCHING_HANDLER_ATTRIBUTE
-        );
-        boolean hasMethodAnnotation = handlerMethod.getMethod().isAnnotationPresent(NeedsUserContext.class);
-        boolean hasClassAnnotation = handlerMethod.getBeanType().isAnnotationPresent(NeedsUserContext.class);
-
-        if ((!hasMethodAnnotation && !hasClassAnnotation) || request.getCookies() == null) {
-            this.user = null;
-            return;
-        }
-
-        for (Cookie cookie : request.getCookies()) {
-            this.cookies.put(cookie.getName(), cookie.getValue());
-        }
-
-        String accessToken = cookies.getOrDefault("access_token", null);
-        if (accessToken == null) {
-            this.user = null;
-            return;
-        }
-
-        long id;
-        try {
-            id = tokenService.retrieveAccessToken(accessToken).getUserId();
-        } catch (ValidationException e) {
-            this.user = null;
-            return;
-        }
-        this.user = userRepository.findById(id).orElse(null);
-    }
+    private final UserRepository userRepository;
 
     @Override
     public Optional<User> getUserOptional() {
-        return Optional.ofNullable(user);
+        String principalEmail = getPrincipalName();
+        if (principalEmail == null) {
+            return Optional.empty();
+        }
+        return userRepository.findByEmail(Email.valueOf(principalEmail));
     }
 
     @Override
     @NonNull
     public User getUserOrThrow() {
-        if (user == null) {
-            throw new AuthenticationRequiredException();
-        }
-        return user;
-    }
-
-    @Override
-    public AuthTokens refreshTokens() {
-        String refreshToken = getCookieValue("refresh_token");
-        if (refreshToken == null) {
-            throw new RefreshTokenExpiredException();
-        }
-        RefreshToken updatedRefreshToken = tokenService.increaseRefreshTokenExpiration(refreshToken);
-        AccessToken newAccessToken = tokenService.createAccessToken(updatedRefreshToken);
-
-        return new AuthTokens(newAccessToken, updatedRefreshToken);
+        return getUserOptional()
+                .orElseThrow(LoginWrongCredentialsException::new);
     }
 
     @Override
     public void throwIfNotAuthenticated() {
         if (!isAuthenticated()) {
-            throw new AuthenticationRequiredException();
+            throw new LoginWrongCredentialsException();
         }
     }
 
     @Override
     public boolean isAuthenticated() {
-        return user != null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null
+            && authentication.isAuthenticated()
+            && !(authentication.getPrincipal() instanceof String && "anonymousUser".equals(authentication.getPrincipal()));
     }
 
     @Override
-    public String getCookieValue(String key) {
-        return cookies.get(key);
-    }
+    public String getPrincipalName() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
 
-    @Override
-    public String getCookieValueOrDefault(String key, String defaultValue) {
-        return cookies.getOrDefault(key, defaultValue);
+        if (authentication.getPrincipal() instanceof Jwt jwt) {
+            String email = jwt.getClaimAsString("email");
+            if (email != null) {
+                return email;
+            }
+            String preferredUsername = jwt.getClaimAsString("preferred_username");
+            if (preferredUsername != null) {
+                return preferredUsername;
+            }
+            return jwt.getSubject();
+        }
+
+        return authentication.getName();
     }
 }
