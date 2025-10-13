@@ -1,0 +1,11 @@
+server:
+  port: ${APP_PORT:8082}
+
+spring:
+  application:
+    name: OtakuRatingAnimeService
+  data:
+    mongodb:
+      uri: mongodb://${DB_NAME:localhost}:27017/otaku_rating_db
+      database: otaku_rating_anime_db
+      auto-index-creation: true
