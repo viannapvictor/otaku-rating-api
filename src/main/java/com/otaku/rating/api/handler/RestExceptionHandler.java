@@ -1,10 +1,7 @@
 package com.otaku.rating.api.handler;
 
 import com.otaku.rating.api.response.ApiResponse;
-import com.otaku.rating.core.generic.exception.ConflictException;
-import com.otaku.rating.core.generic.exception.NotFoundException;
-import com.otaku.rating.core.generic.exception.UnauthorizedException;
-import com.otaku.rating.core.generic.exception.ValidationException;
+import com.otaku.rating.core.generic.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -30,5 +27,10 @@ public class RestExceptionHandler {
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ApiResponse<Object>> unauthorizedException(ConflictException e) {
         return ApiResponse.error(e).createResponse(HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ApiResponse<Object>> forbiddenException(ForbiddenException e) {
+        return ApiResponse.error(e).createResponse(HttpStatus.FORBIDDEN);
     }
 }

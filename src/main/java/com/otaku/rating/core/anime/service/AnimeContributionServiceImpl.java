@@ -2,9 +2,11 @@ package com.otaku.rating.core.anime.service;
 
 import com.otaku.rating.core.anime.exception.AnimeContributionAlreadyExists;
 import com.otaku.rating.core.anime.exception.AnimeContributionNotFoundException;
+import com.otaku.rating.core.anime.model.Anime;
 import com.otaku.rating.core.anime.model.AnimeContribution;
 import com.otaku.rating.core.anime.repository.AnimeContributionRepository;
 import com.otaku.rating.core.generic.exception.ForbiddenException;
+import com.otaku.rating.core.person.model.Person;
 import com.otaku.rating.core.user.model.User;
 import com.otaku.rating.core.user.model.valueobject.UserAuthorizationLevel;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +54,26 @@ public class AnimeContributionServiceImpl implements AnimeContributionService {
             throw new ForbiddenException();
         }
         animeContributionRepository.delete(animeContribution);
+    }
+
+    @Override
+    public void deleteByAnime(User authenticatedUser, Anime anime) {
+        Objects.requireNonNull(authenticatedUser);
+        Objects.requireNonNull(anime);
+        if (!authenticatedUser.hasAuthorization(UserAuthorizationLevel.MODIFICATION)) {
+            throw new ForbiddenException();
+        }
+        animeContributionRepository.deleteByAnime(anime);
+    }
+
+    @Override
+    public void deleteByPerson(User authenticatedUser, Person person) {
+        Objects.requireNonNull(authenticatedUser);
+        Objects.requireNonNull(person);
+        if (!authenticatedUser.hasAuthorization(UserAuthorizationLevel.MODIFICATION)) {
+            throw new ForbiddenException();
+        }
+        animeContributionRepository.deleteByPerson(person);
     }
 
     @Override
