@@ -1,0 +1,12 @@
+package com.otakurating.user.core.model.valueobject;
+
+public final class UserAuthorizationLevel {
+    private UserAuthorizationLevel() {
+    }
+
+    public static final int NONE = 0;
+    public static final int DETAILED_USER = 1 << 0;
+    public static final int MODIFICATION = 1 << 1;
+    public static final int MODERATOR = DETAILED_USER | MODIFICATION;
+    public static final int ALL = DETAILED_USER | MODIFICATION;
+}
