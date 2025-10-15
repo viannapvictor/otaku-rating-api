@@ -39,7 +39,8 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorize -> {
                     authorize
                             .requestMatchers("/api/v1/**").hasAnyRole(ROLE_ADMIN, ROLE_COMMON)
-                            .anyRequest().hasRole(ROLE_ADMIN);
+                            .requestMatchers("/user/**").hasAnyRole(ROLE_ADMIN, ROLE_COMMON)
+                            .anyRequest().authenticated();
                 })
                 .oauth2ResourceServer(oauth2 -> {
                     oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(new KeycloakJwtConverter()));

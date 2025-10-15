@@ -56,13 +56,24 @@ public class KeycloakAdminServiceImpl implements KeycloakAdminService {
 
     private UserRepresentation convertFromCustomRepresentation(KeycloakUserRepresentation customRep) {
         UserRepresentation userRep = new UserRepresentation();
-        userRep.setId(customRep.getId());
-        userRep.setUsername(customRep.getUsername());
-        userRep.setEmail(customRep.getEmail());
-        userRep.setFirstName(customRep.getFirstName());
-        userRep.setLastName(customRep.getLastName());
-        userRep.setEnabled(customRep.getEnabled());
-        userRep.setEmailVerified(customRep.getEmailVerified());
+        if (customRep.getUsername() != null) {
+            userRep.setUsername(customRep.getUsername());
+        }
+        if (customRep.getEmail() != null) {
+            userRep.setEmail(customRep.getEmail());
+        }
+        if (customRep.getFirstName() != null) {
+            userRep.setFirstName(customRep.getFirstName());
+        }
+        if (customRep.getLastName() != null) {
+            userRep.setLastName(customRep.getLastName());
+        }
+        if (customRep.getEnabled() != null) {
+            userRep.setEnabled(customRep.getEnabled());
+        }
+        if (customRep.getEmailVerified() != null) {
+            userRep.setEmailVerified(customRep.getEmailVerified());
+        }
         return userRep;
     }
 
@@ -108,9 +119,13 @@ public class KeycloakAdminServiceImpl implements KeycloakAdminService {
 
     @Override
     public void updateUser(String userId, KeycloakUserRepresentation user) {
-        UserRepresentation userRep = convertFromCustomRepresentation(user);
-        UserResource userResource = getUsersResource().get(userId);
-        userResource.update(userRep);
+        try {
+            UserRepresentation userRep = convertFromCustomRepresentation(user);
+            UserResource userResource = getUsersResource().get(userId);
+            userResource.update(userRep);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to update user in Keycloak: " + e.getMessage(), e);
+        }
     }
 
     @Override

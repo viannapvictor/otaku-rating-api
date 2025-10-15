@@ -12,5 +12,5 @@ import lombok.Setter;
 public class UserUpdateInfoRequestDTO {
     private String firstName;
     private String lastName;
-    private String username;
+    private String email;
 } 

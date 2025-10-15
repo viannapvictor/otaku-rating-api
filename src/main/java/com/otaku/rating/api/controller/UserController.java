@@ -105,18 +105,12 @@ public class UserController {
         if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
             String userId = jwt.getSubject();
 
-            KeycloakUserRepresentation user = keycloakAdminService.getUser(userId);
-            if (requestDTO.getFirstName() != null) {
-                user.setFirstName(requestDTO.getFirstName());
-            }
-            if (requestDTO.getLastName() != null) {
-                user.setLastName(requestDTO.getLastName());
-            }
-            if (requestDTO.getUsername() != null) {
-                user.setUsername(requestDTO.getUsername());
-            }
+            KeycloakUserRepresentation updateRequest = new KeycloakUserRepresentation();
+            updateRequest.setFirstName(requestDTO.getFirstName());
+            updateRequest.setLastName(requestDTO.getLastName());
+            updateRequest.setEmail(requestDTO.getEmail());
 
-            keycloakAdminService.updateUser(userId, user);
+            keycloakAdminService.updateUser(userId, updateRequest);
             KeycloakUserRepresentation updatedUser = keycloakAdminService.getUser(userId);
             return ApiResponse.success(updatedUser).createResponse(HttpStatus.OK);
         }
@@ -132,32 +126,5 @@ public class UserController {
             return ApiResponse.success(null).createResponse(HttpStatus.OK);
         }
         return ApiResponse.error("UNAUTHORIZED", "User not authenticated").createResponse(HttpStatus.UNAUTHORIZED);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<KeycloakUserRepresentation>> updateUser(
-            @PathVariable("id") String id,
-            @RequestBody UserUpdateInfoRequestDTO requestDTO) {
-
-        KeycloakUserRepresentation user = keycloakAdminService.getUser(id);
-        if (requestDTO.getFirstName() != null) {
-            user.setFirstName(requestDTO.getFirstName());
-        }
-        if (requestDTO.getLastName() != null) {
-            user.setLastName(requestDTO.getLastName());
-        }
-        if (requestDTO.getUsername() != null) {
-            user.setUsername(requestDTO.getUsername());
-        }
-
-        keycloakAdminService.updateUser(id, user);
-        KeycloakUserRepresentation updatedUser = keycloakAdminService.getUser(id);
-        return ApiResponse.success(updatedUser).createResponse(HttpStatus.OK);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Object>> deleteUser(@PathVariable("id") String id) {
-        keycloakAdminService.deleteUser(id);
-        return ApiResponse.success(null).createResponse(HttpStatus.OK);
     }
 }
