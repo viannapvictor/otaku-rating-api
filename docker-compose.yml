@@ -10,18 +10,20 @@ services:
       - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
       - ENV KC_DB=mysql
       - ENV KC_DB_URL=jdbc:mysql://localhost:3306/keycloak
-      - ENV KC_DB_USERNAME=<YOUR_USERNAME>
-      - ENV KC_DB_PASSWORD=<YOUR_PASSWORD>
+      - ENV KC_DB_USERNAME=root
+      - ENV KC_DB_PASSWORD=Admin@123
     depends_on:
       db:
         condition: service_healthy
 
   db:
     image: mysql:8.0.30-debian
+    ports:
+      - "3306:3306"
     volumes:
       - ./.docker/dbdata:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=<YOUR_PASSWORD>
+      - MYSQL_ROOT_PASSWORD=Admin@123
       - MYSQL_DATABASE=keycloak
     security_opt:
       - seccomp:unconfined

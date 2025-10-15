@@ -1,7 +1,6 @@
 package com.otaku.rating.api.config;
 
 import lombok.RequiredArgsConstructor;
-import org.json.JSONObject;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -99,7 +98,7 @@ public class WebSecurityConfig {
             final Function<Map.Entry<String, Object>, Stream<String>> mapResource =
                     resource -> {
                         final var key = resource.getKey();
-                        final var value = (JSONObject) resource.getValue();
+                        final var value = (Map<String, Object>) resource.getValue();
                         final var roles = (Collection<String>) value.get(ROLES);
                         return roles.stream().map(role -> key.concat(SEPARATOR).concat(role));
                     };

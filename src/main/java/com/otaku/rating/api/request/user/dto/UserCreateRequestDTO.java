@@ -1,16 +1,16 @@
 package com.otaku.rating.api.request.user.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserUpdateInfoRequestDTO {
+public class UserCreateRequestDTO {
+    private String username;
+    private String email;
     private String firstName;
     private String lastName;
-    private String username;
-} 
+    private String password;
+}
