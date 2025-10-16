@@ -1,0 +1,31 @@
+server:
+  port: ${APP_PORT:8081}
+
+spring:
+  application:
+    name: OtakuRatingUserService
+  datasource:
+    url: jdbc:mysql://${DB_NAME:localhost}:3306/minha_base?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:Admin@123}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    jpa:
+      hibernate:
+        ddl-auto: update
+      properties:
+        hibernate:
+          format_sql: true
+          dialect: org.hibernate.dialect.MySQLDialect
+
+app:
+  user:
+    cookie-secure: true
+    cookie-http-only: true
+    access-token-cookie-name: access_token
+    refresh-token-cookie-name: refresh_token
+    access-token-expiration-seconds: ${ACCESS_TOKEN_EXPIRATION_SECONDS:900}
+    refresh-token-expiration-seconds: ${REFRESH_TOKEN_EXPIRATION_SECONDS:2419200}
+    reset-password-confirmation-expiration-minutes: ${RESET_PASSWORD_CONFIRMATION_EXPIRATION_MINUTES:15}
+    email-confirmation-expiration-minutes: ${EMAIL_CONFIRMATION_EXPIRATION_MINUTES:30}
+    email-confirmation-manager-job: ${EMAIL_CONFIRMATION_MANAGER_JOB:0 0 * * * *}
+    refresh-token-secret: ${REFRESH_TOKEN_SECRET:V3RY_$ECRET_REFRESH_TOKEN_KEYyui943yriy384u5yu385ygu83}
