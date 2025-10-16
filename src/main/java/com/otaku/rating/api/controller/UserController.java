@@ -8,6 +8,7 @@ import com.otaku.rating.api.request.user.dto.UserUpdateInfoRequestDTO;
 import com.otaku.rating.core.user.model.KeycloakUserRepresentation;
 import com.otaku.rating.core.user.service.KeycloakAdminService;
 import com.otaku.rating.core.user.decorator.NeedsUserContext;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ public class UserController {
     private final KeycloakAdminService keycloakAdminService;
 
     @PostMapping
+    @RolesAllowed("ADMIN")
     public ResponseEntity<ApiResponse<KeycloakUserRepresentation>> createUser(@RequestBody UserCreateRequestDTO requestDTO) {
         KeycloakUserRepresentation keycloakUser = new KeycloakUserRepresentation();
         keycloakUser.setUsername(requestDTO.getUsername());
