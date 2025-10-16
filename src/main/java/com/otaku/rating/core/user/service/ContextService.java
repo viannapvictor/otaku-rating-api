@@ -7,7 +7,5 @@ import java.util.Optional;
 public interface ContextService {
     Optional<User> getUserOptional();
     User getUserOrThrow();
-    void throwIfNotAuthenticated();
-    boolean isAuthenticated();
     String getPrincipalName();
 }

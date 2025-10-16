@@ -35,21 +35,6 @@ public class ContextServiceImpl implements ContextService {
     }
 
     @Override
-    public void throwIfNotAuthenticated() {
-        if (!isAuthenticated()) {
-            throw new LoginWrongCredentialsException();
-        }
-    }
-
-    @Override
-    public boolean isAuthenticated() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication != null
-            && authentication.isAuthenticated()
-            && !(authentication.getPrincipal() instanceof String && "anonymousUser".equals(authentication.getPrincipal()));
-    }
-
-    @Override
     public String getPrincipalName() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
