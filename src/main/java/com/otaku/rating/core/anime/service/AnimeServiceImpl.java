@@ -4,6 +4,7 @@ import com.otaku.rating.core.anime.exception.AnimeAlreadyExistsException;
 import com.otaku.rating.core.anime.exception.AnimeNotFoundException;
 import com.otaku.rating.core.anime.model.Anime;
 import com.otaku.rating.core.anime.repository.AnimeRepository;
+import com.otaku.rating.core.anime.strategy.AnimeSearchStrategy;
 import com.otaku.rating.core.generic.exception.ForbiddenException;
 import com.otaku.rating.core.generic.utils.PageUtils;
 import com.otaku.rating.core.user.model.User;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -24,9 +26,9 @@ public class AnimeServiceImpl implements AnimeService {
     private final AnimeRepository animeRepository;
 
     @Override
-    public Page<Anime> getPage(int page, int size) {
+    public Page<Anime> getPage(int page, int size, List<AnimeSearchStrategy> strategies) {
         Pageable pageable = PageUtils.createPageable(page, size, MAX_PAGE_SIZE);
-        return animeRepository.findAnimePage(pageable);
+        return animeRepository.findAnimePage(pageable, strategies);
     }
 
     @Override

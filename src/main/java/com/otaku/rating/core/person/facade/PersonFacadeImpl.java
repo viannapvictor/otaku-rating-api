@@ -1,5 +1,6 @@
 package com.otaku.rating.core.person.facade;
 
+import com.otaku.rating.core.anime.service.AnimeContributionService;
 import com.otaku.rating.core.person.model.Person;
 import com.otaku.rating.core.person.service.PersonService;
 import com.otaku.rating.core.user.model.User;
@@ -14,6 +15,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PersonFacadeImpl implements PersonFacade {
     private final PersonService personService;
+    private AnimeContributionService animeContributionService;
     private final ContextService contextService;
 
     @Override
@@ -37,6 +39,7 @@ public class PersonFacadeImpl implements PersonFacade {
     public void delete(Person person) {
         User user = contextService.getUserOrThrow();
         personService.delete(user, person);
+        animeContributionService.deleteByPerson(user, person);
     }
 
     @Override

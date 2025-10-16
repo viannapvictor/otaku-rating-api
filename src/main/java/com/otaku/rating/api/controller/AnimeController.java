@@ -1,12 +1,15 @@
 package com.otaku.rating.api.controller;
 
 import com.otaku.rating.api.request.anime.dto.AnimeCreateDTO;
-import com.otaku.rating.api.request.generic.PageRequest;
+import com.otaku.rating.api.request.anime.dto.AnimePageRequestDTO;
 import com.otaku.rating.api.response.ApiResponse;
 import com.otaku.rating.api.response.anime.dto.AnimeViewDTO;
 import com.otaku.rating.api.response.generic.PageResponse;
 import com.otaku.rating.core.anime.facade.AnimeFacade;
 import com.otaku.rating.core.anime.model.Anime;
+import com.otaku.rating.core.anime.strategy.AnimeSearchStrategy;
+import com.otaku.rating.core.anime.strategy.DescriptionAnimeSearchStrategy;
+import com.otaku.rating.core.anime.strategy.TitleAnimeSearchStrategy;
 import com.otaku.rating.core.generic.mapper.InputMapper;
 import com.otaku.rating.core.generic.mapper.OutputMapper;
 import com.otaku.rating.core.user.decorator.NeedsUserContext;
@@ -16,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -27,8 +31,15 @@ public class AnimeController {
     private final OutputMapper<Anime, AnimeViewDTO> animeViewMapper;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<PageResponse<AnimeViewDTO>>> getPage(@ModelAttribute PageRequest pageRequest) {
-        Page<Anime> animePage = animeFacade.getPage(pageRequest.getPage(), pageRequest.getSize());
+    public ResponseEntity<ApiResponse<PageResponse<AnimeViewDTO>>> getPage(@ModelAttribute AnimePageRequestDTO pageRequest) {
+        List<AnimeSearchStrategy> strategies = new ArrayList<>();
+        if (pageRequest.getTitle() != null && !pageRequest.getTitle().isBlank()) {
+            strategies.add(new TitleAnimeSearchStrategy(pageRequest.getTitle()));
+        }
+        if (pageRequest.getDescription() != null && !pageRequest.getDescription().isBlank()) {
+            strategies.add(new DescriptionAnimeSearchStrategy(pageRequest.getDescription()));
+        }
+        Page<Anime> animePage = animeFacade.getPage(pageRequest.getPage(), pageRequest.getSize(), strategies);
         List<AnimeViewDTO> animeViewDTOs = animePage.getContent()
                 .stream()
                 .map(animeViewMapper::toEntity)
