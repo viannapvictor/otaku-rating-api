@@ -65,7 +65,7 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
         String body = String.format(
                 messages.getString(bodyKey),
                 user.getName().getValue(),
-                savedEmailConfirmation.getCode(),
+                savedEmailConfirmation.getCode().getValue(),
                 userProperties.getEmailConfirmationExpirationMinutes()
         );
         emailSender.sendEmail(user, subject, body);

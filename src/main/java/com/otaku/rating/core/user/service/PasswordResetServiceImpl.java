@@ -38,7 +38,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         String body = String.format(
                 messages.getString("message.password.reset.body"),
                 user.getName().getValue(),
-                savedPasswordReset.getCode(),
+                savedPasswordReset.getCode().getValue(),
                 userProperties.getResetPasswordConfirmationExpirationMinutes()
         );
         emailSender.sendEmail(user, subject, body);

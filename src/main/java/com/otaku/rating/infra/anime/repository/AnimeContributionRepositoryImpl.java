@@ -1,8 +1,10 @@
 package com.otaku.rating.infra.anime.repository;
 
+import com.otaku.rating.core.anime.model.Anime;
 import com.otaku.rating.core.anime.model.AnimeContribution;
 import com.otaku.rating.core.anime.repository.AnimeContributionRepository;
 import com.otaku.rating.core.generic.mapper.Mapper;
+import com.otaku.rating.core.person.model.Person;
 import com.otaku.rating.infra.anime.persistence.AnimeContributionEntity;
 import com.otaku.rating.infra.anime.persistence.AnimeContributionIdentifier;
 import lombok.RequiredArgsConstructor;
@@ -44,5 +46,15 @@ public class AnimeContributionRepositoryImpl implements AnimeContributionReposit
                 animeContribution.getAnimeId()
         );
         animeContributionMongoRepository.deleteById(id);
+    }
+
+    @Override
+    public void deleteByAnime(Anime anime) {
+        animeContributionMongoRepository.deleteByIdAnimeId(anime.getId().getValue());
+    }
+
+    @Override
+    public void deleteByPerson(Person person) {
+        animeContributionMongoRepository.deleteByIdPersonId(person.getId());
     }
 }

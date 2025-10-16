@@ -1,6 +1,8 @@
 package com.otaku.rating.core.anime.repository;
 
+import com.otaku.rating.core.anime.model.Anime;
 import com.otaku.rating.core.anime.model.AnimeContribution;
+import com.otaku.rating.core.person.model.Person;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -10,4 +12,6 @@ public interface AnimeContributionRepository {
     boolean exists(String animeId, UUID personId);
     Optional<AnimeContribution> findById(String animeId, UUID personId);
     void delete(AnimeContribution animeContribution);
+    void deleteByAnime(Anime anime);
+    void deleteByPerson(Person person);
 }
