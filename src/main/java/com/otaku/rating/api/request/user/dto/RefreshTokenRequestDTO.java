@@ -1,5 +1,6 @@
 package com.otaku.rating.api.request.user.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserLoginDTO {
-    private String username;
-    private String password;
+public class RefreshTokenRequestDTO {
+    @JsonProperty("refresh_token")
+    private String refreshToken;
 }
