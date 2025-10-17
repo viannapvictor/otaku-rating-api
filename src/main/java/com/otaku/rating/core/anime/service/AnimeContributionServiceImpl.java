@@ -20,7 +20,6 @@ public class AnimeContributionServiceImpl implements AnimeContributionService {
     @Override
     public AnimeContribution add(AnimeContribution animeContribution) {
         Objects.requireNonNull(animeContribution);
-        // Authorization is now handled by @RolesAllowed at controller/facade level
         if (animeContributionRepository.exists(animeContribution.getAnimeId(), animeContribution.getPersonId())) {
             throw new AnimeContributionAlreadyExists();
         }
@@ -30,7 +29,6 @@ public class AnimeContributionServiceImpl implements AnimeContributionService {
     @Override
     public AnimeContribution update(AnimeContribution animeContribution) {
         Objects.requireNonNull(animeContribution);
-        // Authorization is now handled by @RolesAllowed at controller/facade level
         if (!animeContributionRepository.exists(animeContribution.getAnimeId(), animeContribution.getPersonId())) {
             throw new AnimeContributionNotFoundException();
         }
@@ -40,21 +38,18 @@ public class AnimeContributionServiceImpl implements AnimeContributionService {
     @Override
     public void delete(AnimeContribution animeContribution) {
         Objects.requireNonNull(animeContribution);
-        // Authorization is now handled by @RolesAllowed at controller/facade level
         animeContributionRepository.delete(animeContribution);
     }
 
     @Override
     public void deleteByAnime(Anime anime) {
         Objects.requireNonNull(anime);
-        // Authorization is now handled by @RolesAllowed at controller/facade level
         animeContributionRepository.deleteByAnime(anime);
     }
 
     @Override
     public void deleteByPerson(Person person) {
         Objects.requireNonNull(person);
-        // Authorization is now handled by @RolesAllowed at controller/facade level
         animeContributionRepository.deleteByPerson(person);
     }
 

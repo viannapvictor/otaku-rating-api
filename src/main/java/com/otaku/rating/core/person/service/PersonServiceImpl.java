@@ -31,7 +31,6 @@ public class PersonServiceImpl implements PersonService {
         if (person.getId() != null) {
             throw new IllegalArgumentException("The person object cannot have an id when adding.");
         }
-        // Authorization is now handled by @RolesAllowed at controller/facade level
         return personRepository.save(person);
     }
 
@@ -41,7 +40,6 @@ public class PersonServiceImpl implements PersonService {
         if (person.getId() == null) {
             throw new IllegalArgumentException("The person object must have an id when updating.");
         }
-        // Authorization is now handled by @RolesAllowed at controller/facade level
         return personRepository.save(person);
     }
 
@@ -51,7 +49,6 @@ public class PersonServiceImpl implements PersonService {
         if (person.getId() == null) {
             throw new IllegalArgumentException("The person object must have an id when deleting.");
         }
-        // Authorization is now handled by @RolesAllowed at controller/facade level
         personRepository.delete(person);
     }
 

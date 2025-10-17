@@ -31,7 +31,6 @@ public class AnimeServiceImpl implements AnimeService {
     @Override
     public Anime add(Anime anime) {
         Objects.requireNonNull(anime);
-        // Authorization is now handled by @RolesAllowed at controller/facade level
         if (animeRepository.exists(anime.getId().getValue())) {
             throw new AnimeAlreadyExistsException();
         }
@@ -42,7 +41,6 @@ public class AnimeServiceImpl implements AnimeService {
     @Transactional
     public Anime update(String oldId, Anime anime) {
         Objects.requireNonNull(anime);
-        // Authorization is now handled by @RolesAllowed at controller/facade level
         Anime oldAnime = getById(oldId);
         if (Objects.equals(oldId, anime.getId().getValue())) {
             return animeRepository.save(anime);
@@ -54,7 +52,6 @@ public class AnimeServiceImpl implements AnimeService {
     @Override
     public void delete(Anime anime) {
         Objects.requireNonNull(anime);
-        // Authorization is now handled by @RolesAllowed at controller/facade level
         animeRepository.delete(anime);
     }
 

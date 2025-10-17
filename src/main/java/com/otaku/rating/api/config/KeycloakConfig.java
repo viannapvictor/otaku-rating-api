@@ -28,7 +28,7 @@ public class KeycloakConfig {
     public Keycloak keycloak() {
         return KeycloakBuilder.builder()
                 .serverUrl(serverUrl)
-                .realm("master")  // Admin user is in master realm
+                .realm("master")  // The user need to be the admin created in the master and the credentials too.
                 .clientId(clientId)
                 .username(username)
                 .password(password)
