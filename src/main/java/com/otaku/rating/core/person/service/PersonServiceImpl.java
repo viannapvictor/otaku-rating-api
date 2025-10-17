@@ -1,12 +1,9 @@
 package com.otaku.rating.core.person.service;
 
-import com.otaku.rating.core.generic.exception.ForbiddenException;
 import com.otaku.rating.core.generic.utils.PageUtils;
 import com.otaku.rating.core.person.exception.PersonNotFoundException;
 import com.otaku.rating.core.person.model.Person;
 import com.otaku.rating.core.person.repository.PersonRepository;
-import com.otaku.rating.core.user.model.User;
-import com.otaku.rating.core.user.model.valueobject.UserAuthorizationLevel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,41 +26,32 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public Person add(User authenticatedUser, Person person) {
-        Objects.requireNonNull(authenticatedUser);
+    public Person add(Person person) {
         Objects.requireNonNull(person);
         if (person.getId() != null) {
             throw new IllegalArgumentException("The person object cannot have an id when adding.");
         }
-        if (!authenticatedUser.hasAuthorization(UserAuthorizationLevel.MODIFICATION)) {
-            throw new ForbiddenException();
-        }
+        // Authorization is now handled by @RolesAllowed at controller/facade level
         return personRepository.save(person);
     }
 
     @Override
-    public Person update(User authenticatedUser, Person person) {
-        Objects.requireNonNull(authenticatedUser);
+    public Person update(Person person) {
         Objects.requireNonNull(person);
         if (person.getId() == null) {
             throw new IllegalArgumentException("The person object must have an id when updating.");
         }
-        if (!authenticatedUser.hasAuthorization(UserAuthorizationLevel.MODIFICATION)) {
-            throw new ForbiddenException();
-        }
+        // Authorization is now handled by @RolesAllowed at controller/facade level
         return personRepository.save(person);
     }
 
     @Override
-    public void delete(User authenticatedUser, Person person) {
-        Objects.requireNonNull(authenticatedUser);
+    public void delete(Person person) {
         Objects.requireNonNull(person);
         if (person.getId() == null) {
             throw new IllegalArgumentException("The person object must have an id when deleting.");
         }
-        if (!authenticatedUser.hasAuthorization(UserAuthorizationLevel.MODIFICATION)) {
-            throw new ForbiddenException();
-        }
+        // Authorization is now handled by @RolesAllowed at controller/facade level
         personRepository.delete(person);
     }
 

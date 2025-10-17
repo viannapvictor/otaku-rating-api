@@ -5,10 +5,7 @@ import com.otaku.rating.core.anime.exception.AnimeContributionNotFoundException;
 import com.otaku.rating.core.anime.model.Anime;
 import com.otaku.rating.core.anime.model.AnimeContribution;
 import com.otaku.rating.core.anime.repository.AnimeContributionRepository;
-import com.otaku.rating.core.generic.exception.ForbiddenException;
 import com.otaku.rating.core.person.model.Person;
-import com.otaku.rating.core.user.model.User;
-import com.otaku.rating.core.user.model.valueobject.UserAuthorizationLevel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,12 +18,9 @@ public class AnimeContributionServiceImpl implements AnimeContributionService {
     private final AnimeContributionRepository animeContributionRepository;
 
     @Override
-    public AnimeContribution add(User authenticatedUser, AnimeContribution animeContribution) {
-        Objects.requireNonNull(authenticatedUser);
+    public AnimeContribution add(AnimeContribution animeContribution) {
         Objects.requireNonNull(animeContribution);
-        if (!authenticatedUser.hasAuthorization(UserAuthorizationLevel.MODIFICATION)) {
-            throw new ForbiddenException();
-        }
+        // Authorization is now handled by @RolesAllowed at controller/facade level
         if (animeContributionRepository.exists(animeContribution.getAnimeId(), animeContribution.getPersonId())) {
             throw new AnimeContributionAlreadyExists();
         }
@@ -34,12 +28,9 @@ public class AnimeContributionServiceImpl implements AnimeContributionService {
     }
 
     @Override
-    public AnimeContribution update(User authenticatedUser, AnimeContribution animeContribution) {
-        Objects.requireNonNull(authenticatedUser);
+    public AnimeContribution update(AnimeContribution animeContribution) {
         Objects.requireNonNull(animeContribution);
-        if (!authenticatedUser.hasAuthorization(UserAuthorizationLevel.MODIFICATION)) {
-            throw new ForbiddenException();
-        }
+        // Authorization is now handled by @RolesAllowed at controller/facade level
         if (!animeContributionRepository.exists(animeContribution.getAnimeId(), animeContribution.getPersonId())) {
             throw new AnimeContributionNotFoundException();
         }
@@ -47,32 +38,23 @@ public class AnimeContributionServiceImpl implements AnimeContributionService {
     }
 
     @Override
-    public void delete(User authenticatedUser, AnimeContribution animeContribution) {
-        Objects.requireNonNull(authenticatedUser);
+    public void delete(AnimeContribution animeContribution) {
         Objects.requireNonNull(animeContribution);
-        if (!authenticatedUser.hasAuthorization(UserAuthorizationLevel.MODIFICATION)) {
-            throw new ForbiddenException();
-        }
+        // Authorization is now handled by @RolesAllowed at controller/facade level
         animeContributionRepository.delete(animeContribution);
     }
 
     @Override
-    public void deleteByAnime(User authenticatedUser, Anime anime) {
-        Objects.requireNonNull(authenticatedUser);
+    public void deleteByAnime(Anime anime) {
         Objects.requireNonNull(anime);
-        if (!authenticatedUser.hasAuthorization(UserAuthorizationLevel.MODIFICATION)) {
-            throw new ForbiddenException();
-        }
+        // Authorization is now handled by @RolesAllowed at controller/facade level
         animeContributionRepository.deleteByAnime(anime);
     }
 
     @Override
-    public void deleteByPerson(User authenticatedUser, Person person) {
-        Objects.requireNonNull(authenticatedUser);
+    public void deleteByPerson(Person person) {
         Objects.requireNonNull(person);
-        if (!authenticatedUser.hasAuthorization(UserAuthorizationLevel.MODIFICATION)) {
-            throw new ForbiddenException();
-        }
+        // Authorization is now handled by @RolesAllowed at controller/facade level
         animeContributionRepository.deleteByPerson(person);
     }
 

@@ -7,7 +7,6 @@ import com.otaku.rating.api.response.generic.PageResponse;
 import com.otaku.rating.api.request.user.dto.UserUpdateInfoRequestDTO;
 import com.otaku.rating.core.user.model.KeycloakUserRepresentation;
 import com.otaku.rating.core.user.service.KeycloakAdminService;
-import com.otaku.rating.core.user.decorator.NeedsUserContext;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,7 +21,6 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/user")
-@NeedsUserContext
 public class UserController {
     private final KeycloakAdminService keycloakAdminService;
 

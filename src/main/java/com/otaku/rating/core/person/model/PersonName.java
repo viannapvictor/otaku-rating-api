@@ -29,7 +29,7 @@ public final class PersonName {
             );
             throw new PersonNameInvalidLengthException();
         }
-        if (!hasInvalidChars(sanitizedValue)) {
+        if (hasInvalidChars(sanitizedValue)) {
             throw new PersonNameInvalidCharacterException();
         }
         return new PersonName(sanitizedValue);

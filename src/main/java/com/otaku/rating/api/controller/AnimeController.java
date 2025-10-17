@@ -12,7 +12,7 @@ import com.otaku.rating.core.anime.strategy.DescriptionAnimeSearchStrategy;
 import com.otaku.rating.core.anime.strategy.TitleAnimeSearchStrategy;
 import com.otaku.rating.core.generic.mapper.InputMapper;
 import com.otaku.rating.core.generic.mapper.OutputMapper;
-import com.otaku.rating.core.user.decorator.NeedsUserContext;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -57,7 +57,7 @@ public class AnimeController {
     }
 
     @PostMapping
-    @NeedsUserContext
+    @RolesAllowed({"ADMIN", "MODERATOR"})
     public ResponseEntity<ApiResponse<AnimeViewDTO>> create(@RequestBody AnimeCreateDTO form) {
         Anime anime = animeCreateMapper.toModel(form);
         Anime createdAnime = animeFacade.add(anime);
@@ -67,7 +67,7 @@ public class AnimeController {
     }
 
     @PutMapping("/{id}")
-    @NeedsUserContext
+    @RolesAllowed({"ADMIN", "MODERATOR"})
     public ResponseEntity<ApiResponse<AnimeViewDTO>> update(@PathVariable("id") String id, @RequestBody AnimeCreateDTO form) {
         Anime anime = animeCreateMapper.toModel(form);
         Anime updatedAnime = animeFacade.update(id, anime);
@@ -77,7 +77,7 @@ public class AnimeController {
     }
 
     @DeleteMapping("/{id}")
-    @NeedsUserContext
+    @RolesAllowed({"ADMIN", "MODERATOR"})
     public ResponseEntity<ApiResponse<Object>> delete(@PathVariable("id") String id) {
         Anime anime = animeFacade.getById(id);
         animeFacade.delete(anime);

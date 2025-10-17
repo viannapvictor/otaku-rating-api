@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 public class WebSecurityConfig {
 
     private static final String ROLE_ADMIN = "ADMIN";
+    private static final String ROLE_MODERATOR = "MODERATOR";
     private static final String ROLE_COMMON = "COMMON";
 
     private final CookieAuthenticationFilter cookieAuthenticationFilter;
@@ -41,10 +42,18 @@ public class WebSecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> {
                     authorize
+                            // Public endpoints - no authentication required
                             .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/auth/logout").permitAll()
+
+                            // Protected endpoints - require authentication and roles
                             .requestMatchers("/api/auth/**").authenticated()
-                            .requestMatchers("/api/v1/**").hasAnyRole(ROLE_ADMIN, ROLE_COMMON)
-                            .requestMatchers("/api/user/**").hasAnyRole(ROLE_ADMIN, ROLE_COMMON)
+                            .requestMatchers("/api/v1/**").hasAnyRole(ROLE_ADMIN, ROLE_MODERATOR, ROLE_COMMON)
+                            .requestMatchers("/api/user/**").hasAnyRole(ROLE_ADMIN, ROLE_MODERATOR, ROLE_COMMON)
+                            .requestMatchers("/api/person/**").hasAnyRole(ROLE_ADMIN, ROLE_MODERATOR, ROLE_COMMON)
+                            .requestMatchers("/api/anime/**").hasAnyRole(ROLE_ADMIN, ROLE_MODERATOR, ROLE_COMMON)
+                            .requestMatchers("/api/anime-contribution/**").hasAnyRole(ROLE_ADMIN, ROLE_MODERATOR, ROLE_COMMON)
+
+                            // All other requests require authentication
                             .anyRequest().authenticated();
                 })
                 // Add cookie filter before OAuth2 Resource Server filter
