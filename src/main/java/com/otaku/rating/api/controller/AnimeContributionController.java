@@ -8,7 +8,7 @@ import com.otaku.rating.core.anime.facade.AnimeContributionFacade;
 import com.otaku.rating.core.anime.model.AnimeContribution;
 import com.otaku.rating.core.generic.mapper.InputMapper;
 import com.otaku.rating.core.generic.mapper.OutputMapper;
-import com.otaku.rating.core.user.decorator.NeedsUserContext;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +36,7 @@ public class AnimeContributionController {
     }
 
     @PostMapping
-    @NeedsUserContext
+    @RolesAllowed({"ADMIN", "MODERATOR"})
     public ResponseEntity<ApiResponse<AnimeContributionViewDTO>> create(@RequestBody AnimeContributionCreateDTO form) {
         AnimeContribution animeContribution = animeContributionCreateMapper.toModel(form);
         AnimeContribution createdAnimeContribution = animeContributionFacade.add(animeContribution);
@@ -46,7 +46,7 @@ public class AnimeContributionController {
     }
 
     @PutMapping("/{animeId}/{personId}")
-    @NeedsUserContext
+    @RolesAllowed({"ADMIN", "MODERATOR"})
     public ResponseEntity<ApiResponse<AnimeContributionViewDTO>> update(
             @PathVariable("animeId") String animeId,
             @PathVariable("personId") UUID personId,
@@ -61,7 +61,7 @@ public class AnimeContributionController {
     }
 
     @DeleteMapping("/{animeId}/{personId}")
-    @NeedsUserContext
+    @RolesAllowed({"ADMIN", "MODERATOR"})
     public ResponseEntity<ApiResponse<Object>> delete(
             @PathVariable("animeId") String animeId,
             @PathVariable("personId") UUID personId

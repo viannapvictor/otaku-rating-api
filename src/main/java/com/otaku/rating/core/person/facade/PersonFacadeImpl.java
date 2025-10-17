@@ -3,8 +3,6 @@ package com.otaku.rating.core.person.facade;
 import com.otaku.rating.core.anime.service.AnimeContributionService;
 import com.otaku.rating.core.person.model.Person;
 import com.otaku.rating.core.person.service.PersonService;
-import com.otaku.rating.core.user.model.User;
-import com.otaku.rating.core.user.service.ContextService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -15,8 +13,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PersonFacadeImpl implements PersonFacade {
     private final PersonService personService;
-    private AnimeContributionService animeContributionService;
-    private final ContextService contextService;
+    private final AnimeContributionService animeContributionService;
 
     @Override
     public Page<Person> getPage(int page, int size) {
@@ -25,21 +22,18 @@ public class PersonFacadeImpl implements PersonFacade {
 
     @Override
     public Person add(Person person) {
-        User user = contextService.getUserOrThrow();
-        return personService.add(user, person);
+        return personService.add(person);
     }
 
     @Override
     public Person update(Person person) {
-        User user = contextService.getUserOrThrow();
-        return personService.update(user, person);
+        return personService.update(person);
     }
 
     @Override
     public void delete(Person person) {
-        User user = contextService.getUserOrThrow();
-        personService.delete(user, person);
-        animeContributionService.deleteByPerson(user, person);
+        personService.delete(person);
+        animeContributionService.deleteByPerson(person);
     }
 
     @Override

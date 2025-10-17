@@ -2,6 +2,7 @@ package com.otaku.rating.infra.person.persistence;
 
 import jakarta.persistence.Id;
 import lombok.*;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -12,7 +13,6 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 @Builder
 public class PersonEntity {
     @Id
@@ -23,4 +23,11 @@ public class PersonEntity {
 
     @Field(name = "description")
     private String description;
+
+    @PersistenceCreator
+    public PersonEntity(UUID id, String name, String description) {
+        this.id = id == null ? UUID.randomUUID() : id;
+        this.name = name;
+        this.description = description;
+    }
 }

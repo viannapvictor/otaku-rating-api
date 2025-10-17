@@ -5,10 +5,7 @@ import com.otaku.rating.core.anime.exception.AnimeNotFoundException;
 import com.otaku.rating.core.anime.model.Anime;
 import com.otaku.rating.core.anime.repository.AnimeRepository;
 import com.otaku.rating.core.anime.strategy.AnimeSearchStrategy;
-import com.otaku.rating.core.generic.exception.ForbiddenException;
 import com.otaku.rating.core.generic.utils.PageUtils;
-import com.otaku.rating.core.user.model.User;
-import com.otaku.rating.core.user.model.valueobject.UserAuthorizationLevel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,12 +29,8 @@ public class AnimeServiceImpl implements AnimeService {
     }
 
     @Override
-    public Anime add(User authenticatedUser, Anime anime) {
-        Objects.requireNonNull(authenticatedUser);
+    public Anime add(Anime anime) {
         Objects.requireNonNull(anime);
-        if (!authenticatedUser.hasAuthorization(UserAuthorizationLevel.MODIFICATION)) {
-            throw new ForbiddenException();
-        }
         if (animeRepository.exists(anime.getId().getValue())) {
             throw new AnimeAlreadyExistsException();
         }
@@ -46,13 +39,8 @@ public class AnimeServiceImpl implements AnimeService {
 
     @Override
     @Transactional
-    public Anime update(User authenticatedUser, String oldId, Anime anime) {
-        Objects.requireNonNull(authenticatedUser);
+    public Anime update(String oldId, Anime anime) {
         Objects.requireNonNull(anime);
-
-        if (!authenticatedUser.hasAuthorization(UserAuthorizationLevel.MODIFICATION)) {
-            throw new ForbiddenException();
-        }
         Anime oldAnime = getById(oldId);
         if (Objects.equals(oldId, anime.getId().getValue())) {
             return animeRepository.save(anime);
@@ -62,12 +50,8 @@ public class AnimeServiceImpl implements AnimeService {
     }
 
     @Override
-    public void delete(User authenticatedUser, Anime anime) {
-        Objects.requireNonNull(authenticatedUser);
+    public void delete(Anime anime) {
         Objects.requireNonNull(anime);
-        if (!authenticatedUser.hasAuthorization(UserAuthorizationLevel.MODIFICATION)) {
-            throw new ForbiddenException();
-        }
         animeRepository.delete(anime);
     }
 
