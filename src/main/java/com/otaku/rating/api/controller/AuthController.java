@@ -1,134 +1,105 @@
 package com.otaku.rating.api.controller;
 
-import com.otaku.rating.api.config.SecurityConfig;
 import com.otaku.rating.api.request.user.dto.*;
 import com.otaku.rating.api.response.ApiResponse;
-import com.otaku.rating.api.response.user.dto.UserViewDTO;
-import com.otaku.rating.core.generic.mapper.InputMapper;
-import com.otaku.rating.core.generic.mapper.OutputMapper;
-import com.otaku.rating.core.user.model.AuthTokens;
-import com.otaku.rating.core.user.model.EmailConfirmationRequest;
-import com.otaku.rating.core.user.model.PasswordResetConfirm;
-import com.otaku.rating.core.user.model.User;
-import com.otaku.rating.core.user.model.UserLogin;
-import com.otaku.rating.core.user.model.UserRegister;
-import com.otaku.rating.core.user.model.valueobject.Email;
-import com.otaku.rating.core.user.service.PasswordResetService;
-import com.otaku.rating.core.user.service.UserService;
-import com.otaku.rating.core.user.decorator.NeedsUserContext;
+import com.otaku.rating.api.response.auth.dto.TokenResponseDTO;
+import com.otaku.rating.core.user.service.KeycloakAuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
 @RequiredArgsConstructor
+@RequestMapping("/auth")
 public class AuthController {
-    private final UserService userService;
-    private final OutputMapper<User, UserViewDTO> userOutputMapper;
-    private final InputMapper<UserRegister, UserRegisterDTO> createUserMapper;
-    private final InputMapper<UserLogin, UserLoginDTO> userLoginMapper;
-    private final InputMapper<EmailConfirmationRequest, EmailConfirmationRequestDTO> emailConfirmationRequestMapper;
-    private final InputMapper<Email, PasswordResetRequestDTO> passwordResetRequestMapper;
-    private final InputMapper<PasswordResetConfirm, PasswordResetConfirmDTO> passwordResetConfirmMapper;
-    private final SecurityConfig securityConfig;
-    private final PasswordResetService passwordResetService;
 
-    @PostMapping("/register")
-    public ResponseEntity<ApiResponse<UserViewDTO>> register(@RequestBody UserRegisterDTO userRegisterDTO) {
-        UserRegister userRegister = createUserMapper.toModel(userRegisterDTO);
-        User createdUser = userService.createUser(userRegister);
-        UserViewDTO userViewDTO = userOutputMapper.toEntity(createdUser);
-        return ApiResponse.success(userViewDTO).createResponse(HttpStatus.CREATED);
-    }
-    @PostMapping("/confirm-email")
-    @NeedsUserContext
-    public ResponseEntity<ApiResponse<Object>> confirmEmail(
-            @RequestBody EmailConfirmationRequestDTO emailConfirmationRequestDto,
-            HttpServletResponse response
-    ) {
-        EmailConfirmationRequest emailConfirmationRequest = emailConfirmationRequestMapper.toModel(emailConfirmationRequestDto);
-        userService.confirmEmail(
-                emailConfirmationRequest.getCode(),
-                emailConfirmationRequest.getEmail()
-        );
-        userService.logout();
+    private final KeycloakAuthService keycloakAuthService;
 
-        Cookie refreshCookie = securityConfig.createRefreshTokenCookie(null);
-        Cookie accessCookie = securityConfig.createAccessTokenCookie(null);
+    @Value("${app.user.cookie-secure:false}")
+    private boolean cookieSecure;
 
-        response.addCookie(refreshCookie);
-        response.addCookie(accessCookie);
+    @Value("${app.user.cookie-http-only:true}")
+    private boolean cookieHttpOnly;
 
-        return ApiResponse.success(null).createResponse(HttpStatus.OK);
-    }
+    @Value("${app.user.access-token-cookie-name:access_token}")
+    private String accessTokenCookieName;
+
+    @Value("${app.user.refresh-token-cookie-name:refresh_token}")
+    private String refreshTokenCookieName;
 
     @PostMapping("/login")
-    @NeedsUserContext
-    public ResponseEntity<ApiResponse<Object>> login(@RequestBody UserLoginDTO userLoginDTO, HttpServletResponse response) {
-        UserLogin userLogin = userLoginMapper.toModel(userLoginDTO);
-        AuthTokens authTokens = userService.login(
-                userLogin.getEmail(),
-                userLogin.getPassword()
-        );
-        Cookie refreshCookie = securityConfig.createRefreshTokenCookie(authTokens.getRefreshToken());
-        Cookie accessCookie = securityConfig.createAccessTokenCookie(authTokens.getAccessToken());
+    public ResponseEntity<ApiResponse<String>> login(@RequestBody UserLoginDTO loginDTO, HttpServletResponse response) {
+        try {
+            TokenResponseDTO tokens = keycloakAuthService.login(loginDTO.getUsername(), loginDTO.getPassword());
 
-        response.addCookie(refreshCookie);
-        response.addCookie(accessCookie);
+            Cookie accessTokenCookie = createCookie(accessTokenCookieName, tokens.getAccessToken(), tokens.getExpiresIn());
+            response.addCookie(accessTokenCookie);
 
-        return ApiResponse.success(null).createResponse(HttpStatus.OK);
+            Cookie refreshTokenCookie = createCookie(refreshTokenCookieName, tokens.getRefreshToken(), tokens.getRefreshExpiresIn());
+            response.addCookie(refreshTokenCookie);
+
+            return ApiResponse.success("Login successful").createResponse(HttpStatus.OK);
+        } catch (Exception e) {
+            return ApiResponse.<String>error("LOGIN_FAILED", "Invalid credentials or user not found")
+                    .createResponse(HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<String>> refreshToken(@CookieValue(name = "refresh_token", required = false) String refreshToken,
+                                                              HttpServletResponse response) {
+        try {
+            if (refreshToken == null) {
+                return ApiResponse.<String>error("REFRESH_FAILED", "No refresh token provided in cookie")
+                        .createResponse(HttpStatus.BAD_REQUEST);
+            }
+
+            TokenResponseDTO tokens = keycloakAuthService.refreshToken(refreshToken);
+
+            Cookie accessTokenCookie = createCookie(accessTokenCookieName, tokens.getAccessToken(), tokens.getExpiresIn());
+            response.addCookie(accessTokenCookie);
+
+            Cookie refreshTokenCookie = createCookie(refreshTokenCookieName, tokens.getRefreshToken(), tokens.getRefreshExpiresIn());
+            response.addCookie(refreshTokenCookie);
+
+            return ApiResponse.success("Token refreshed successfully").createResponse(HttpStatus.OK);
+        } catch (Exception e) {
+            return ApiResponse.<String>error("REFRESH_FAILED", "Invalid or expired refresh token")
+                    .createResponse(HttpStatus.UNAUTHORIZED);
+        }
     }
 
     @PostMapping("/logout")
-    @NeedsUserContext
-    public ResponseEntity<ApiResponse<Object>> logout(HttpServletResponse response) {
-        userService.logout();
-        Cookie refreshCookie = securityConfig.createRefreshTokenCookie(null);
-        Cookie accessCookie = securityConfig.createAccessTokenCookie(null);
+    public ResponseEntity<ApiResponse<Object>> logout(@CookieValue(name = "refresh_token", required = false) String refreshToken,
+                                                       HttpServletResponse response) {
+        try {
+            if (refreshToken != null) {
+                keycloakAuthService.logout(refreshToken);
+            }
 
-        response.addCookie(refreshCookie);
-        response.addCookie(accessCookie);
+            Cookie accessTokenCookie = createCookie(accessTokenCookieName, "", 0);
+            response.addCookie(accessTokenCookie);
 
-        return ApiResponse.success(null).createResponse(HttpStatus.OK);
+            Cookie refreshTokenCookie = createCookie(refreshTokenCookieName, "", 0);
+            response.addCookie(refreshTokenCookie);
+
+            return ApiResponse.success(null).createResponse(HttpStatus.OK);
+        } catch (Exception e) {
+            return ApiResponse.error("LOGOUT_FAILED", "Failed to logout")
+                    .createResponse(HttpStatus.BAD_REQUEST);
+        }
     }
 
-    @PostMapping("/refresh-tokens")
-    @NeedsUserContext
-    public ResponseEntity<ApiResponse<Object>> refreshTokens(HttpServletResponse response) {
-        AuthTokens authTokens = userService.getContext().refreshTokens();
-
-        Cookie refreshCookie = securityConfig.createRefreshTokenCookie(authTokens.getRefreshToken());
-        Cookie accessCookie = securityConfig.createAccessTokenCookie(authTokens.getAccessToken());
-
-        response.addCookie(refreshCookie);
-        response.addCookie(accessCookie);
-
-        return ApiResponse.success(null).createResponse(HttpStatus.OK);
-    }
-
-    @PostMapping("/forgot-password")
-    public ResponseEntity<ApiResponse<Object>> requestPasswordReset(@RequestBody PasswordResetRequestDTO requestDTO) {
-        Email email = passwordResetRequestMapper.toModel(requestDTO);
-        User user = userService.findByEmail(email);
-        passwordResetService.createPasswordResetRequest(user);
-
-        return ApiResponse.success(null).createResponse(HttpStatus.OK);
-    }
-
-    @PostMapping("/reset-password")
-    public ResponseEntity<ApiResponse<Object>> resetPassword(@RequestBody PasswordResetConfirmDTO confirmDTO) {
-        PasswordResetConfirm passwordResetConfirm = passwordResetConfirmMapper.toModel(confirmDTO);
-        userService.resetPassword(
-                passwordResetConfirm.getCode(),
-                passwordResetConfirm.getNewPassword()
-        );
-        return ApiResponse.success(null).createResponse(HttpStatus.OK);
+    private Cookie createCookie(String name, String value, Integer maxAge) {
+        Cookie cookie = new Cookie(name, value);
+        cookie.setHttpOnly(cookieHttpOnly);
+        cookie.setSecure(cookieSecure);
+        cookie.setPath("/");
+        cookie.setMaxAge(maxAge != null ? maxAge : -1);
+        return cookie;
     }
 }

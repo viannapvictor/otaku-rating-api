@@ -10,6 +10,7 @@ import com.otaku.rating.core.person.facade.PersonFacade;
 import com.otaku.rating.core.person.model.Person;
 import com.otaku.rating.core.generic.mapper.InputMapper;
 import com.otaku.rating.core.generic.mapper.OutputMapper;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -48,6 +49,7 @@ public class PersonController {
     }
 
     @PostMapping
+    @RolesAllowed({"ADMIN", "MODERATOR"})
     public ResponseEntity<ApiResponse<PersonViewDTO>> create(@RequestBody PersonCreateDTO form) {
         Person person = personCreateMapper.toModel(form);
         Person createdPerson = personFacade.add(person);
@@ -57,6 +59,7 @@ public class PersonController {
     }
 
     @PutMapping("/{id}")
+    @RolesAllowed({"ADMIN", "MODERATOR"})
     public ResponseEntity<ApiResponse<PersonViewDTO>> update(@PathVariable("id") UUID id, @RequestBody PersonCreateDTO form) {
         PersonUpdateDTO personUpdateDTO = new PersonUpdateDTO(id, form.getName(), form.getDescription());
         Person person = personUpdateMapper.toModel(personUpdateDTO);
@@ -67,6 +70,7 @@ public class PersonController {
     }
 
     @DeleteMapping("/{id}")
+    @RolesAllowed({"ADMIN", "MODERATOR"})
     public ResponseEntity<ApiResponse<Object>> delete(@PathVariable("id") UUID id) {
         Person person = personFacade.getById(id);
         personFacade.delete(person);

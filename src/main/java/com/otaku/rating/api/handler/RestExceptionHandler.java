@@ -9,11 +9,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class RestExceptionHandler {
-    @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<ApiResponse<Object>> validationException(ValidationException e) {
-        return ApiResponse.error(e).createResponse(HttpStatus.BAD_REQUEST);
-    }
-
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ApiResponse<Object>> notFoundException(NotFoundException e) {
         return ApiResponse.error(e).createResponse(HttpStatus.NOT_FOUND);
@@ -25,8 +20,13 @@ public class RestExceptionHandler {
     }
 
     @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<ApiResponse<Object>> unauthorizedException(ConflictException e) {
+    public ResponseEntity<ApiResponse<Object>> conflictException(ConflictException e) {
         return ApiResponse.error(e).createResponse(HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(CoreException.class)
+    public ResponseEntity<ApiResponse<Object>> coreException(CoreException e) {
+        return ApiResponse.error(e).createResponse(HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ForbiddenException.class)
