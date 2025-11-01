@@ -1,0 +1,17 @@
+package com.otakurating.anime.core.repository;
+
+import com.otakurating.anime.core.model.Anime;
+import com.otakurating.anime.core.model.AnimeContribution;
+import com.otakurating.anime.core.model.Person;
+
+import java.util.Optional;
+import java.util.UUID;
+
+public interface AnimeContributionRepository {
+    AnimeContribution save(AnimeContribution animeContribution);
+    boolean exists(String animeId, UUID personId);
+    Optional<AnimeContribution> findById(String animeId, UUID personId);
+    void delete(AnimeContribution animeContribution);
+    void deleteByAnime(Anime anime);
+    void deleteByPerson(Person person);
+}
