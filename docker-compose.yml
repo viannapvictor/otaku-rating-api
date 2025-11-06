@@ -13,7 +13,7 @@ services:
     build:
       dockerfile: gateway-service/Dockerfile
     ports:
-      - "8080:8080"
+      - "8081:8081"
     environment:
       SPRING_CLOUD_CONSUL_HOST: consul
       SPRING_CLOUD_CONSUL_PORT: 8500
@@ -26,10 +26,10 @@ services:
         /opt/keycloak/bin/kc.sh build --health-enabled=true --metrics-enabled=true
         exec /opt/keycloak/bin/kc.sh start --optimized
     ports:
-      - "8443:8080"
+      - "8080:8080"
     environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin123
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin123
       KC_DB: mysql
       KC_DB_URL: jdbc:mysql://user-db:3306/keycloak
       KC_DB_USERNAME: root
@@ -49,7 +49,7 @@ services:
 
   user-db:
     image: mysql:8.0.30-debian
-    ports:
+    expose:
       - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: Admin@123
@@ -62,7 +62,7 @@ services:
 
   anime-db:
     image: mongo:8.2.2-rc0-noble
-    ports:
+    expose:
       - "27017:27017"
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
@@ -73,13 +73,13 @@ services:
   user-service:
     build:
       dockerfile: user-service/Dockerfile
-    ports:
-      - "8081:8081"
+    expose:
+      - "8082:8082"
     environment:
       DATASOURCE_URL: jdbc:mysql://user-db:3306/keycloak
       DATASOURCE_USERNAME: root
       DATASOURCE_PASSWORD: Admin@123
-      KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8443
+      KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080/auth
       KEYCLOAK_REALM: otaku-rating-api
       KEYCLOAK_CLIENT_ID: otaku-rating-api-client
       KEYCLOAK_CLIENT_SECRET: tryeur6JeDE4dAJ2qxjEpkE19NbbNCc0
@@ -95,8 +95,8 @@ services:
   anime-service:
     build:
       dockerfile: anime-service/Dockerfile
-    ports:
-      - "8082:8082"
+    expose:
+      - "8083:8083"
     environment:
       MONGODB_URI: mongodb://anime-db:27017/otaku_rating_db
       MONGODB_DATABASE: otaku_rating_db

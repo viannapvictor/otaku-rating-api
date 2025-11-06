@@ -25,13 +25,13 @@ public class UserController {
     private final KeycloakAdminService keycloakAdminService;
 
     @PostMapping
-    @RolesAllowed("ADMIN")
     public ResponseEntity<ApiResponse<KeycloakUserRepresentation>> createUser(@RequestBody UserCreateRequestDTO requestDTO) {
         KeycloakUserRepresentation keycloakUser = new KeycloakUserRepresentation();
         keycloakUser.setUsername(requestDTO.getUsername());
         keycloakUser.setEmail(requestDTO.getEmail());
         keycloakUser.setFirstName(requestDTO.getFirstName());
         keycloakUser.setLastName(requestDTO.getLastName());
+        keycloakUser.setRoles(List.of("COMMON"));
         keycloakUser.setEnabled(true);
         keycloakUser.setEmailVerified(false);
 

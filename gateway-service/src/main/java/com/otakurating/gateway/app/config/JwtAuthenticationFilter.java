@@ -20,6 +20,12 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        String userId = exchange.getRequest().getHeaders().getFirst("X-User-Id");
+        String userRole = exchange.getRequest().getHeaders().getFirst("X-User-Role");
+        if (userId != null || userRole != null) {
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
+        }
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (authHeader == null || authHeader.isBlank()) {
             return chain.filter(exchange);

@@ -42,11 +42,9 @@ public class WebSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> {
                     authorize
-                            .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/auth/logout").permitAll()
                             .requestMatchers("/api/auth/**").authenticated()
-                            .requestMatchers("/api/v1/**").hasAnyRole(ROLE_ADMIN, ROLE_MODERATOR, ROLE_COMMON)
-                            .requestMatchers("/api/user/**").hasAnyRole(ROLE_ADMIN, ROLE_MODERATOR, ROLE_COMMON)
-                            .anyRequest().authenticated();
+                            .requestMatchers("/api/user/me").authenticated()
+                            .anyRequest().permitAll();
                 })
                 .addFilterBefore(cookieAuthenticationFilter, BearerTokenAuthenticationFilter.class)
                 .oauth2ResourceServer(oauth2 -> {
