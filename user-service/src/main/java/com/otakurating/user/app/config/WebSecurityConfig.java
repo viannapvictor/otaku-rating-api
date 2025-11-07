@@ -42,7 +42,6 @@ public class WebSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> {
                     authorize
-                            .requestMatchers("/api/auth/**").authenticated()
                             .requestMatchers("/api/user/me").authenticated()
                             .anyRequest().permitAll();
                 })

@@ -24,9 +24,11 @@ services:
     command:
       - |
         /opt/keycloak/bin/kc.sh build --health-enabled=true --metrics-enabled=true
-        exec /opt/keycloak/bin/kc.sh start --optimized
+        exec /opt/keycloak/bin/kc.sh start --optimized --import-realm
     ports:
       - "8080:8080"
+    volumes:
+      - ./keycloak-realm.json:/opt/keycloak/data/import/otaku-rating-api.json:ro
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin123
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin123
@@ -79,7 +81,7 @@ services:
       DATASOURCE_URL: jdbc:mysql://user-db:3306/keycloak
       DATASOURCE_USERNAME: root
       DATASOURCE_PASSWORD: Admin@123
-      KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080/auth
+      KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080
       KEYCLOAK_REALM: otaku-rating-api
       KEYCLOAK_CLIENT_ID: otaku-rating-api-client
       KEYCLOAK_CLIENT_SECRET: tryeur6JeDE4dAJ2qxjEpkE19NbbNCc0
