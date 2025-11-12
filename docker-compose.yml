@@ -1,34 +1,109 @@
-name: keycloak_container
+name: otaku_rating
 services:
-  keycloak:
-    image: quay.io/keycloak/keycloak:26.2.3
-    command: start-dev
+  consul:
+    image: consul:1.15.4
     ports:
-      - 8443:8080
+      - "8500:8500"
+    command: agent -dev -client=0.0.0.0
     environment:
-      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
-      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
-      - ENV KC_DB=mysql
-      - ENV KC_DB_URL=jdbc:mysql://localhost:3306/keycloak
-      - ENV KC_DB_USERNAME=root
-      - ENV KC_DB_PASSWORD=Admin@123
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+
+  gateway-service:
+    build:
+      dockerfile: gateway-service/Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4.2
+    entrypoint: [ "/bin/sh", "-c" ]
+    command:
+      - |
+        /opt/keycloak/bin/kc.sh build --health-enabled=true --metrics-enabled=true
+        exec /opt/keycloak/bin/kc.sh start --optimized --import-realm
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./keycloak-realm.json:/opt/keycloak/data/import/otaku-rating-api.json:ro
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin123
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin123
+      KC_DB: mysql
+      KC_DB_URL: jdbc:mysql://user-db:3306/keycloak
+      KC_DB_USERNAME: root
+      KC_DB_PASSWORD: Admin@123
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
     depends_on:
-      db:
+      user-db:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', '[ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(java.net.HttpURLConnection.HTTP_OK == ((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() ? 0 : 1); } }" > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:9000/health/live']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  user-db:
+    image: mysql:8.0.30-debian
+    expose:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: Admin@123
+      MYSQL_DATABASE: keycloak
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  anime-db:
+    image: mongo:8.2.2-rc0-noble
+    expose:
+      - "27017:27017"
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  user-service:
+    build:
+      dockerfile: user-service/Dockerfile
+    expose:
+      - "8082:8082"
+    environment:
+      DATASOURCE_URL: jdbc:mysql://user-db:3306/keycloak
+      DATASOURCE_USERNAME: root
+      DATASOURCE_PASSWORD: Admin@123
+      KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: otaku-rating-api
+      KEYCLOAK_CLIENT_ID: otaku-rating-api-client
+      KEYCLOAK_CLIENT_SECRET: tryeur6JeDE4dAJ2qxjEpkE19NbbNCc0
+      KEYCLOAK_ADMIN_USERNAME: admin123
+      KEYCLOAK_ADMIN_PASSWORD: admin123
+      KEYCLOAK_ADMIN_CLIENT_ID: admin-cli
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+    depends_on:
+      keycloak:
         condition: service_healthy
 
-  db:
-    image: mysql:8.0.30-debian
-    ports:
-      - "3306:3306"
-    volumes:
-      - ./.docker/dbdata:/var/lib/mysql
+  anime-service:
+    build:
+      dockerfile: anime-service/Dockerfile
+    expose:
+      - "8083:8083"
     environment:
-      - MYSQL_ROOT_PASSWORD=Admin@123
-      - MYSQL_DATABASE=keycloak
-    security_opt:
-      - seccomp:unconfined
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 5s
-      timeout: 10s
-      retries: 3
+      MONGODB_URI: mongodb://anime-db:27017/otaku_rating_db
+      MONGODB_DATABASE: otaku_rating_db
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+    depends_on:
+      anime-db:
+        condition: service_healthy
