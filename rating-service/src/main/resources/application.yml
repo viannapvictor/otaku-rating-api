@@ -1,0 +1,53 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: rating-service
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      database: ${MONGODB_DATABASE}
+      auto-index-creation: true
+
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: ${KAFKA_BOOTSTRAP_SERVERS}
+
+      bindings:
+        rating-created-out-0:
+          destination: rating-events
+          content-type: application/json
+
+        rating-updated-out-0:
+          destination: rating-events
+          content-type: application/json
+
+        rating-deleted-out-0:
+          destination: rating-events
+          content-type: application/json
+
+        review-created-out-0:
+          destination: rating-events
+          content-type: application/json
+
+        review-updated-out-0:
+          destination: rating-events
+          content-type: application/json
+
+        review-deleted-out-0:
+          destination: rating-events
+          content-type: application/json
+
+        user-reviews-deleted-out-0:
+          destination: rating-events
+          content-type: application/json
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
