@@ -20,5 +20,5 @@ WORKDIR /app
 
 COPY --from=build /build/user-service/target/*.jar user-service.jar
 
-EXPOSE 8081
+EXPOSE 8082
 ENTRYPOINT ["java", "-jar", "user-service.jar"]

@@ -11,16 +11,15 @@ spring:
     password: ${DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-    jpa:
-      database-platform: org.hibernate.dialect.MySQLDialect
-
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
       hibernate:
-        ddl-auto: update
-
-      properties:
-        hibernate:
-          format_sql: true
-          dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
 
   security:
     oauth2:
@@ -28,6 +27,16 @@ spring:
         jwt:
           issuer-uri: ${KEYCLOAK_AUTH_SERVER_URL}/realms/${KEYCLOAK_REALM}
           jwk-set-uri: ${KEYCLOAK_AUTH_SERVER_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
+
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+      bindings:
+        user-deleted-out-0:
+          destination: user-events
+          content-type: application/json
 
 keycloak:
   auth-server-url: ${KEYCLOAK_AUTH_SERVER_URL}
