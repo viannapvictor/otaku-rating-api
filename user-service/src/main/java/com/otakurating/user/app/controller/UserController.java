@@ -5,8 +5,16 @@ import com.otakurating.user.app.request.dto.UserCreateRequestDTO;
 import com.otakurating.user.app.request.dto.UserUpdateInfoRequestDTO;
 import com.otakurating.user.app.response.dto.ApiResponse;
 import com.otakurating.user.app.response.dto.PageResponse;
+import com.otakurating.user.core.command.CreateUserCommand;
+import com.otakurating.user.core.command.DeleteUserCommand;
+import com.otakurating.user.core.command.GetUserCommand;
+import com.otakurating.user.core.command.UpdateUserCommand;
 import com.otakurating.user.core.model.KeycloakUserRepresentation;
-import com.otakurating.user.core.service.KeycloakAdminService;
+import com.otakurating.user.core.port.in.CreateUserUseCase;
+import com.otakurating.user.core.port.in.DeleteUserUseCase;
+import com.otakurating.user.core.port.in.GetUserUseCase;
+import com.otakurating.user.core.port.in.UpdateUserUseCase;
+import com.otakurating.user.core.port.out.UserAdminPort;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,26 +30,26 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/user")
 public class UserController {
-    private final KeycloakAdminService keycloakAdminService;
+    private final CreateUserUseCase createUserUseCase;
+    private final UpdateUserUseCase updateUserUseCase;
+    private final DeleteUserUseCase deleteUserUseCase;
+    private final GetUserUseCase getUserUseCase;
+    private final UserAdminPort userAdminPort;
 
     @PostMapping
     public ResponseEntity<ApiResponse<KeycloakUserRepresentation>> createUser(@RequestBody UserCreateRequestDTO requestDTO) {
-        KeycloakUserRepresentation keycloakUser = new KeycloakUserRepresentation();
-        keycloakUser.setUsername(requestDTO.getUsername());
-        keycloakUser.setEmail(requestDTO.getEmail());
-        keycloakUser.setFirstName(requestDTO.getFirstName());
-        keycloakUser.setLastName(requestDTO.getLastName());
-        keycloakUser.setRoles(List.of("COMMON"));
-        keycloakUser.setEnabled(true);
-        keycloakUser.setEmailVerified(false);
+        CreateUserCommand command = new CreateUserCommand(
+            requestDTO.getUsername(),
+            requestDTO.getEmail(),
+            requestDTO.getFirstName(),
+            requestDTO.getLastName(),
+            requestDTO.getPassword(),
+            List.of("COMMON"),
+            true,
+            false
+        );
 
-        String userId = keycloakAdminService.createUser(keycloakUser);
-
-        if (requestDTO.getPassword() != null && !requestDTO.getPassword().isEmpty()) {
-            keycloakAdminService.resetPassword(userId, requestDTO.getPassword(), false);
-        }
-
-        KeycloakUserRepresentation createdUser = keycloakAdminService.getUser(userId);
+        KeycloakUserRepresentation createdUser = createUserUseCase.execute(command);
         return ApiResponse.success(createdUser).createResponse(HttpStatus.CREATED);
     }
 
@@ -50,7 +58,7 @@ public class UserController {
         int first = pageRequest.getPage() * pageRequest.getSize();
         int max = pageRequest.getSize();
 
-        List<KeycloakUserRepresentation> users = keycloakAdminService.getUsers(first, max);
+        List<KeycloakUserRepresentation> users = userAdminPort.getUsers(first, max);
 
         PageResponse<KeycloakUserRepresentation> pageResponse = new PageResponse<>();
         pageResponse.setContent(users);
@@ -66,13 +74,14 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<KeycloakUserRepresentation>> getUserById(@PathVariable("id") String id) {
-        KeycloakUserRepresentation user = keycloakAdminService.getUser(id);
+        GetUserCommand command = new GetUserCommand(id);
+        KeycloakUserRepresentation user = getUserUseCase.execute(command);
         return ApiResponse.success(user).createResponse(HttpStatus.OK);
     }
 
     @GetMapping("/username/{username}")
     public ResponseEntity<ApiResponse<KeycloakUserRepresentation>> getUserByUsername(@PathVariable("username") String username) {
-        List<KeycloakUserRepresentation> users = keycloakAdminService.getUserByUsername(username);
+        List<KeycloakUserRepresentation> users = userAdminPort.getUserByUsername(username);
         if (users.isEmpty()) {
             return ApiResponse.<KeycloakUserRepresentation>error("USER_NOT_FOUND", "User not found").createResponse(HttpStatus.NOT_FOUND);
         }
@@ -81,7 +90,7 @@ public class UserController {
 
     @GetMapping("/email/{email}")
     public ResponseEntity<ApiResponse<KeycloakUserRepresentation>> getUserByEmail(@PathVariable("email") String email) {
-        List<KeycloakUserRepresentation> users = keycloakAdminService.getUserByEmail(email);
+        List<KeycloakUserRepresentation> users = userAdminPort.getUserByEmail(email);
         if (users.isEmpty()) {
             return ApiResponse.<KeycloakUserRepresentation>error("USER_NOT_FOUND", "User not found").createResponse(HttpStatus.NOT_FOUND);
         }
@@ -93,7 +102,8 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
             String userId = jwt.getSubject();
-            KeycloakUserRepresentation user = keycloakAdminService.getUser(userId);
+            GetUserCommand command = new GetUserCommand(userId);
+            KeycloakUserRepresentation user = getUserUseCase.execute(command);
             return ApiResponse.success(user).createResponse(HttpStatus.OK);
         }
         return ApiResponse.<KeycloakUserRepresentation>error("UNAUTHORIZED", "User not authenticated").createResponse(HttpStatus.UNAUTHORIZED);
@@ -105,13 +115,14 @@ public class UserController {
         if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
             String userId = jwt.getSubject();
 
-            KeycloakUserRepresentation updateRequest = new KeycloakUserRepresentation();
-            updateRequest.setFirstName(requestDTO.getFirstName());
-            updateRequest.setLastName(requestDTO.getLastName());
-            updateRequest.setEmail(requestDTO.getEmail());
+            UpdateUserCommand command = new UpdateUserCommand(
+                userId,
+                requestDTO.getEmail(),
+                requestDTO.getFirstName(),
+                requestDTO.getLastName()
+            );
 
-            keycloakAdminService.updateUser(userId, updateRequest);
-            KeycloakUserRepresentation updatedUser = keycloakAdminService.getUser(userId);
+            KeycloakUserRepresentation updatedUser = updateUserUseCase.execute(command);
             return ApiResponse.success(updatedUser).createResponse(HttpStatus.OK);
         }
         return ApiResponse.<KeycloakUserRepresentation>error("UNAUTHORIZED", "User not authenticated").createResponse(HttpStatus.UNAUTHORIZED);
@@ -122,7 +133,8 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
             String userId = jwt.getSubject();
-            keycloakAdminService.deleteUser(userId);
+            DeleteUserCommand command = new DeleteUserCommand(userId);
+            deleteUserUseCase.execute(command);
             return ApiResponse.success(null).createResponse(HttpStatus.OK);
         }
         return ApiResponse.error("UNAUTHORIZED", "User not authenticated").createResponse(HttpStatus.UNAUTHORIZED);
