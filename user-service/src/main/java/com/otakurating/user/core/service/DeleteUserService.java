@@ -45,7 +45,7 @@ public class DeleteUserService implements DeleteUserUseCase {
     }
 
     @Transactional
-    private void storeAndPublishEvent(UserDeletedEvent event, String userId) {
+    protected void storeAndPublishEvent(UserDeletedEvent event, String userId) {
         eventStorePort.store(event, "User", userId);
         eventPublisherPort.publish(event);
     }
