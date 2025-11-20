@@ -2,17 +2,15 @@ package com.otakurating.anime.app.controller;
 
 import com.otakurating.anime.app.request.dto.PersonCreateDTO;
 import com.otakurating.anime.app.request.dto.PersonUpdateDTO;
-import com.otakurating.anime.app.request.mapper.PersonCreateMapper;
-import com.otakurating.anime.app.request.mapper.PersonUpdateMapper;
 import com.otakurating.anime.app.response.dto.ApiResponse;
 import com.otakurating.anime.app.response.dto.PageResponse;
 import com.otakurating.anime.app.response.dto.PersonViewDTO;
 import com.otakurating.anime.app.response.mapper.PersonViewMapper;
-import com.otakurating.anime.core.facade.PersonFacade;
+import com.otakurating.anime.core.command.*;
 import com.otakurating.anime.core.model.Person;
 import com.otakurating.anime.app.request.dto.PageRequest;
+import com.otakurating.anime.core.port.in.*;
 import jakarta.annotation.security.RolesAllowed;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,59 +20,82 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/v1/person")
 public class PersonController {
-    private final PersonFacade personFacade;
-    private final PersonCreateMapper personCreateMapper;
-    private final PersonUpdateMapper personUpdateMapper;
+    private final CreatePersonUseCase createPersonUseCase;
+    private final UpdatePersonUseCase updatePersonUseCase;
+    private final DeletePersonUseCase deletePersonUseCase;
+    private final GetPersonPageUseCase getPersonPageUseCase;
+    private final GetPersonUseCase getPersonUseCase;
     private final PersonViewMapper personViewMapper;
 
+    public PersonController(
+            CreatePersonUseCase createPersonUseCase,
+            UpdatePersonUseCase updatePersonUseCase,
+            DeletePersonUseCase deletePersonUseCase,
+            GetPersonPageUseCase getPersonPageUseCase,
+            GetPersonUseCase getPersonUseCase,
+            PersonViewMapper personViewMapper
+    ) {
+        this.createPersonUseCase = createPersonUseCase;
+        this.updatePersonUseCase = updatePersonUseCase;
+        this.deletePersonUseCase = deletePersonUseCase;
+        this.getPersonPageUseCase = getPersonPageUseCase;
+        this.getPersonUseCase = getPersonUseCase;
+        this.personViewMapper = personViewMapper;
+    }
+
     @GetMapping
-    public ResponseEntity<ApiResponse<PageResponse<PersonViewDTO>>> getPage(@ModelAttribute PageRequest pageRequest) {
-        Page<Person> personPage = personFacade.getPage(pageRequest.getPage(), pageRequest.getSize());
-        List<PersonViewDTO> personViewDTOs = personPage.getContent()
+    public ResponseEntity<ApiResponse<PageResponse<PersonViewDTO>>> getPage(
+            @ModelAttribute PageRequest pageRequest
+    ) {
+        GetPersonPageCommand command = new GetPersonPageCommand(pageRequest.page(), pageRequest.size());
+        Page<Person> personPage = getPersonPageUseCase.getPage(command);
+        List<PersonViewDTO> views = personPage.getContent()
                 .stream()
                 .map(personViewMapper::toEntity)
                 .toList();
-        PageResponse<PersonViewDTO> pageResponse = PageResponse.from(personPage, personViewDTOs);
+        PageResponse<PersonViewDTO> pageResponse = PageResponse.from(personPage, views);
         return ApiResponse.success(pageResponse).createResponse(HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PersonViewDTO>> getById(@PathVariable("id") UUID id) {
-        Person person = personFacade.getById(id);
-        PersonViewDTO personViewDTO = personViewMapper.toEntity(person);
+        GetPersonCommand command = new GetPersonCommand(id);
+        Person person = getPersonUseCase.getById(command);
+        PersonViewDTO view = personViewMapper.toEntity(person);
 
-        return ApiResponse.success(personViewDTO).createResponse(HttpStatus.OK);
+        return ApiResponse.success(view).createResponse(HttpStatus.OK);
     }
 
     @PostMapping
     @RolesAllowed({"ADMIN", "MODERATOR"})
     public ResponseEntity<ApiResponse<PersonViewDTO>> create(@RequestBody PersonCreateDTO form) {
-        Person person = personCreateMapper.toModel(form);
-        Person createdPerson = personFacade.add(person);
-        PersonViewDTO personViewDTO = personViewMapper.toEntity(createdPerson);
+        CreatePersonCommand command = new CreatePersonCommand(form.name(), form.description());
+        Person person = createPersonUseCase.create(command);
+        PersonViewDTO view = personViewMapper.toEntity(person);
 
-        return ApiResponse.success(personViewDTO).createResponse(HttpStatus.CREATED);
+        return ApiResponse.success(view).createResponse(HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
     @RolesAllowed({"ADMIN", "MODERATOR"})
-    public ResponseEntity<ApiResponse<PersonViewDTO>> update(@PathVariable("id") UUID id, @RequestBody PersonCreateDTO form) {
-        PersonUpdateDTO personUpdateDTO = new PersonUpdateDTO(id, form.getName(), form.getDescription());
-        Person person = personUpdateMapper.toModel(personUpdateDTO);
-        Person updatedPerson = personFacade.update(person);
-        PersonViewDTO personViewDTO = personViewMapper.toEntity(updatedPerson);
+    public ResponseEntity<ApiResponse<PersonViewDTO>> update(
+            @PathVariable("id") UUID id,
+            @RequestBody PersonUpdateDTO form
+    ) {
+        UpdatePersonCommand command = new UpdatePersonCommand(id, form.name(), form.description());
+        Person person = updatePersonUseCase.update(command);
+        PersonViewDTO view = personViewMapper.toEntity(person);
 
-        return ApiResponse.success(personViewDTO).createResponse(HttpStatus.OK);
+        return ApiResponse.success(view).createResponse(HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     @RolesAllowed({"ADMIN", "MODERATOR"})
     public ResponseEntity<ApiResponse<Object>> delete(@PathVariable("id") UUID id) {
-        Person person = personFacade.getById(id);
-        personFacade.delete(person);
+        DeletePersonCommand command = new DeletePersonCommand(id);
+        deletePersonUseCase.delete(command);
 
         return ApiResponse.success(null).createResponse(HttpStatus.OK);
     }
