@@ -13,14 +13,14 @@ COPY rating-service/pom.xml rating-service/pom.xml
 COPY pom.xml pom.xml
 
 RUN mvn clean install -DskipTests
-RUN mvn -pl anime-service clean package -DskipTests
+RUN mvn -pl rating-service clean package -DskipTests
 
 
 FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-COPY --from=build /build/anime-service/target/*.jar anime-service.jar
+COPY --from=build /build/rating-service/target/*.jar rating-service.jar
 
 EXPOSE 8082
-ENTRYPOINT ["java", "-jar", "anime-service.jar"]
+ENTRYPOINT ["java", "-jar", "rating-service.jar"]
