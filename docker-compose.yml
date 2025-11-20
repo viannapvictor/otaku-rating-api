@@ -72,8 +72,18 @@ services:
       timeout: 5s
       retries: 5
 
+  rating-db:
+    image: mongo:8.2.2-rc0-noble
+    expose:
+      - "27017:27017"
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   zookeeper:
-    image: confluentinc/cp-zookeeper:7.5.0
+    image: confluentinc/cp-zookeeper:7.9.4
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -81,7 +91,7 @@ services:
       - "2181:2181"
 
   kafka:
-    image: confluentinc/cp-kafka:7.5.0
+    image: confluentinc/cp-kafka:8.1.0
     depends_on:
       - zookeeper
     ports:
@@ -129,6 +139,22 @@ services:
       MONGODB_DATABASE: otaku_rating_db
       SPRING_CLOUD_CONSUL_HOST: consul
       SPRING_CLOUD_CONSUL_PORT: 8500
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     depends_on:
       anime-db:
+        condition: service_healthy
+
+  rating-service:
+    build:
+      dockerfile: rating-service/Dockerfile
+    expose:
+      - "8084:8084"
+    environment:
+      MONGODB_URI: mongodb://rating-db:27017/otaku_rating_db
+      MONGODB_DATABASE: otaku_rating_db
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      rating-db:
         condition: service_healthy
