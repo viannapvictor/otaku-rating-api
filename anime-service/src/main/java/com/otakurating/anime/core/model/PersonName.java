@@ -3,9 +3,7 @@ package com.otakurating.anime.core.model;
 import com.otakurating.anime.core.exception.PersonNameInvalidCharacterException;
 import com.otakurating.anime.core.exception.PersonNameInvalidLengthException;
 import com.otakurating.anime.core.exception.PersonNameNullException;
-import lombok.Getter;
 
-@Getter
 public final class PersonName {
     public static final int MIN_LENGTH = 1;
     public static final int MAX_LENGTH = 128;
@@ -13,10 +11,6 @@ public final class PersonName {
     private final String value;
 
     private PersonName(String value) {
-        this.value = value;
-    }
-
-    public static PersonName valueOf(String value) {
         if (value == null) {
             throw new PersonNameNullException();
         }
@@ -27,10 +21,14 @@ public final class PersonName {
         if (hasInvalidChars(sanitizedValue)) {
             throw new PersonNameInvalidCharacterException();
         }
-        return new PersonName(sanitizedValue);
+        this.value = sanitizedValue;
     }
 
-    public static PersonName valueOfUnsafe(String value) {
+    public String getValue() {
+        return value;
+    }
+
+    public static PersonName valueOf(String value) {
         return new PersonName(value);
     }
 

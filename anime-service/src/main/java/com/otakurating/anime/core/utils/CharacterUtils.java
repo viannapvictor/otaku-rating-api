@@ -1,10 +1,9 @@
 package com.otakurating.anime.core.utils;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CharacterUtils {
+    private CharacterUtils() {
+    }
+
     public static boolean isOneByteDigit(char c) {
         return c >= 48 && c <= 57;
     }

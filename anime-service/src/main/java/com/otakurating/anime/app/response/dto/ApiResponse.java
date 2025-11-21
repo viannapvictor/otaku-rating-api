@@ -1,11 +1,9 @@
 package com.otakurating.anime.app.response.dto;
 
 import com.otakurating.anime.core.exception.CoreException;
-import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-@Getter
 public final class ApiResponse<T> {
     private final boolean success;
     private final T result;
@@ -15,6 +13,22 @@ public final class ApiResponse<T> {
         this.success = success;
         this.result = result;
         this.error = error;
+    }
+
+    public ResponseEntity<ApiResponse<T>> createResponse(HttpStatus status) {
+        return ResponseEntity.status(status).body(this);
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public T getResult() {
+        return result;
+    }
+
+    public ErrorData getError() {
+        return error;
     }
 
     public static <T> ApiResponse<T> success(T result) {
@@ -29,9 +43,5 @@ public final class ApiResponse<T> {
     public static <T> ApiResponse<T> error(String code, String message) {
         ErrorData error = new ErrorData(code, message);
         return new ApiResponse<>(false, null, error);
-    }
-
-    public ResponseEntity<ApiResponse<T>> createResponse(HttpStatus status) {
-        return ResponseEntity.status(status).body(this);
     }
 }

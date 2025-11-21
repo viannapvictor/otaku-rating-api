@@ -26,6 +26,7 @@
         <module>user-service</module>
         <module>anime-service</module>
         <module>gateway-service</module>
+        <module>rating-service</module>
     </modules>
     <scm>
 		<connection/>
@@ -53,11 +54,6 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-consul-discovery</artifactId>
         </dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<optional>true</optional>
-		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>

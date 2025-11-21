@@ -3,9 +3,7 @@ package com.otakurating.anime.core.model;
 import com.otakurating.anime.core.exception.AnimeTitleInvalidCharacterException;
 import com.otakurating.anime.core.exception.AnimeTitleInvalidLengthException;
 import com.otakurating.anime.core.exception.AnimeTitleNullException;
-import lombok.Getter;
 
-@Getter
 public final class AnimeTitle {
     public static final int MIN_LENGTH = 1;
     public static final int MAX_LENGTH = 128;
@@ -13,10 +11,6 @@ public final class AnimeTitle {
     private final String value;
 
     private AnimeTitle(String value) {
-        this.value = value;
-    }
-
-    public static AnimeTitle valueOf(String value) {
         if (value == null) {
             throw new AnimeTitleNullException();
         }
@@ -27,10 +21,14 @@ public final class AnimeTitle {
         if (hasInvalidChars(sanitizedValue)) {
             throw new AnimeTitleInvalidCharacterException();
         }
-        return new AnimeTitle(sanitizedValue);
+        this.value = sanitizedValue;
     }
 
-    public static AnimeTitle valueOfUnsafe(String value) {
+    public String getValue() {
+        return value;
+    }
+
+    public static AnimeTitle valueOf(String value) {
         return new AnimeTitle(value);
     }
 

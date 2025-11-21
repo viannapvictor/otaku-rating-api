@@ -1,8 +1,5 @@
 package com.otakurating.anime.app.request.dto;
 
-import lombok.Getter;
-
-@Getter
 public class PageRequest {
     private static final int PAGE_DEFAULT = 1;
     private static final int SIZE_DEFAULT = 5;
@@ -14,5 +11,13 @@ public class PageRequest {
         int userPage = page != null ? page : PAGE_DEFAULT;
         this.page = Math.max(0, userPage - 1);
         this.size = size != null ? Integer.parseInt(size) : SIZE_DEFAULT;
+    }
+
+    public int page() {
+        return page;
+    }
+
+    public int size() {
+        return size;
     }
 }

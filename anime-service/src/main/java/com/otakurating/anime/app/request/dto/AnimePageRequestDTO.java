@@ -1,9 +1,6 @@
 package com.otakurating.anime.app.request.dto;
 
-import lombok.Getter;
-
-@Getter
-public class AnimePageRequestDTO extends PageRequest {
+public final class AnimePageRequestDTO extends PageRequest {
     private final String title;
     private final String description;
 
@@ -11,5 +8,13 @@ public class AnimePageRequestDTO extends PageRequest {
         super(page, size);
         this.title = title;
         this.description = description;
+    }
+
+    public String title() {
+        return title;
+    }
+
+    public String description() {
+        return description;
     }
 }
