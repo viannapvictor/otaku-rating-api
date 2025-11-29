@@ -15,4 +15,20 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health,info,metrics,prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  tracing:
+    sampling:
+      probability: 1.0
+    enabled: true
+
+graylog:
+  host: ${GRAYLOG_HOST:localhost}
+  port: ${GRAYLOG_PORT:12201}
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
