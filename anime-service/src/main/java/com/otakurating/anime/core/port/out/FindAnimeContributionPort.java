@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface FindAnimeContributionPort {
-    Optional<AnimeContribution> findByAnimeIdAndPersonId(String animeId, UUID personId);
-    List<AnimeContribution> findByAnimeId(String animeId);
-    boolean existsByAnimeIdAndPersonId(String animeId, UUID personId);
+    Optional<AnimeContribution> findByAnimeIdAndPersonId(UUID animeId, UUID personId);
+    List<AnimeContribution> findByAnimeId(UUID animeId);
+    boolean existsByAnimeIdAndPersonId(UUID animeId, UUID personId);
 }

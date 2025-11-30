@@ -1,13 +1,15 @@
 package com.otakurating.anime.core.command;
 
-public final class GetAnimeCommand extends BaseCommand {
-    private final String id;
+import java.util.UUID;
 
-    public GetAnimeCommand(String id) {
+public final class GetAnimeCommand extends BaseCommand {
+    private final UUID id;
+
+    public GetAnimeCommand(UUID id) {
         this.id = id;
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 }

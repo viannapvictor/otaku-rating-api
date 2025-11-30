@@ -7,9 +7,10 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface FindAnimePort {
-    Optional<Anime> findById(String id);
-    boolean existsById(String id);
+    Optional<Anime> findById(UUID id);
+    boolean existsById(UUID id);
     Page<Anime> findAnimePage(Pageable pageable, List<AnimeSearchStrategy> strategies);
 }

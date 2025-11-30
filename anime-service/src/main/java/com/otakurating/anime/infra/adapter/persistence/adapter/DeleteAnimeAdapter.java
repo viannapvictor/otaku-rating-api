@@ -4,6 +4,8 @@ import com.otakurating.anime.core.port.out.DeleteAnimePort;
 import com.otakurating.anime.infra.adapter.persistence.repository.AnimeMongoRepository;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 public class DeleteAnimeAdapter implements DeleteAnimePort {
     private final AnimeMongoRepository animeMongoRepository;
@@ -13,7 +15,7 @@ public class DeleteAnimeAdapter implements DeleteAnimePort {
     }
 
     @Override
-    public void deleteById(String id) {
+    public void deleteById(UUID id) {
         animeMongoRepository.deleteById(id);
     }
 }

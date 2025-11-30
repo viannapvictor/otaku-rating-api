@@ -1,6 +1,7 @@
 package com.otakurating.rating.core.model;
 
 import com.otakurating.rating.core.command.CreateRatingCommand;
+import com.otakurating.rating.core.command.UpdateRatingIdCommand;
 import com.otakurating.rating.core.event.*;
 import com.otakurating.rating.core.exception.RatingMissingIdentifierException;
 
@@ -9,9 +10,9 @@ import java.util.List;
 import java.util.Objects;
 
 public final class Rating {
-    private final String id;
     private final List<RatingEvent> events;
 
+    private String id;
     private long totalRate;
     private int reviewsCount;
     private boolean onDelete;
@@ -72,6 +73,16 @@ public final class Rating {
         this.events.add(createdEvent);
     }
 
+    public void updateId(UpdateRatingIdCommand command) {
+        if (!Objects.equals(command.getCurrentRatingId(), id)) {
+            return;
+        }
+        if (command.getNewRatingId() == null) {
+            throw new RatingMissingIdentifierException();
+        }
+        this.id = command.getNewRatingId();
+    }
+
     public String getId() {
         return id;
     }
@@ -96,5 +107,9 @@ public final class Rating {
 
     public int getReviewsCount() {
         return reviewsCount;
+    }
+
+    public boolean isOnDelete() {
+        return onDelete;
     }
 }

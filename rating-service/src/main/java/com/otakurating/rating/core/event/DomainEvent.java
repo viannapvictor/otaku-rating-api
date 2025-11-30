@@ -12,6 +12,11 @@ public abstract class DomainEvent {
         this.timestamp = Instant.now();
     }
 
+    public DomainEvent(UUID eventId, Instant timestamp) {
+        this.eventId = eventId;
+        this.timestamp = timestamp;
+    }
+
     public UUID getEventId() {
         return eventId;
     }

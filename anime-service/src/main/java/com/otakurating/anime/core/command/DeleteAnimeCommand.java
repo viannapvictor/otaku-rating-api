@@ -1,13 +1,15 @@
 package com.otakurating.anime.core.command;
 
-public final class DeleteAnimeCommand extends BaseCommand {
-    private final String id;
+import java.util.UUID;
 
-    public DeleteAnimeCommand(String id) {
+public final class DeleteAnimeCommand extends BaseCommand {
+    private final UUID id;
+
+    public DeleteAnimeCommand(UUID id) {
         this.id = id;
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 }

@@ -25,14 +25,14 @@ public class FindAnimeContributionAdapter implements FindAnimeContributionPort {
     }
 
     @Override
-    public Optional<AnimeContribution> findByAnimeIdAndPersonId(String animeId, UUID personId) {
+    public Optional<AnimeContribution> findByAnimeIdAndPersonId(UUID animeId, UUID personId) {
         AnimeContributionIdentifier id = new AnimeContributionIdentifier(animeId, personId);
         return animeContributionMongoRepository.findById(id)
                 .map(animeContributionInfraMapper::toModel);
     }
 
     @Override
-    public List<AnimeContribution> findByAnimeId(String animeId) {
+    public List<AnimeContribution> findByAnimeId(UUID animeId) {
         return animeContributionMongoRepository.findByIdAnimeId(animeId)
                 .stream()
                 .map(animeContributionInfraMapper::toModel)
@@ -40,7 +40,7 @@ public class FindAnimeContributionAdapter implements FindAnimeContributionPort {
     }
 
     @Override
-    public boolean existsByAnimeIdAndPersonId(String animeId, UUID personId) {
+    public boolean existsByAnimeIdAndPersonId(UUID animeId, UUID personId) {
         AnimeContributionIdentifier id = new AnimeContributionIdentifier(animeId, personId);
         return animeContributionMongoRepository.existsById(id);
     }

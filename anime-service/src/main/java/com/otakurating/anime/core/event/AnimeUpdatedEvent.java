@@ -1,16 +1,10 @@
 package com.otakurating.anime.core.event;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 public final class AnimeUpdatedEvent extends AnimeEvent {
-    private final String oldAnimeId;
-
-    public AnimeUpdatedEvent(String animeId, String title, String description, LocalDate release, String oldAnimeId) {
+    public AnimeUpdatedEvent(UUID animeId, String title, String description, LocalDate release) {
         super(animeId, title, description, release);
-        this.oldAnimeId = oldAnimeId;
-    }
-
-    public String getOldAnimeId() {
-        return oldAnimeId;
     }
 }

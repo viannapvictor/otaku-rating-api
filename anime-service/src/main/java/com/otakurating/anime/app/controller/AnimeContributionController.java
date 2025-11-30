@@ -14,9 +14,9 @@ import com.otakurating.anime.core.port.in.CreateAnimeContributionUseCase;
 import com.otakurating.anime.core.port.in.DeleteAnimeContributionUseCase;
 import com.otakurating.anime.core.port.in.GetAnimeContributionUseCase;
 import com.otakurating.anime.core.port.in.UpdateAnimeContributionUseCase;
-import jakarta.annotation.security.RolesAllowed;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -42,7 +42,7 @@ public class AnimeContributionController {
 
     @GetMapping("/{animeId}/{personId}")
     public ResponseEntity<ApiResponse<AnimeContributionViewDTO>> getById(
-            @PathVariable("animeId") String animeId,
+            @PathVariable("animeId") UUID animeId,
             @PathVariable("personId") UUID personId
     ) {
         GetAnimeContributionCommand command = new GetAnimeContributionCommand(animeId, personId);
@@ -53,7 +53,7 @@ public class AnimeContributionController {
     }
 
     @PostMapping
-    @RolesAllowed({"ADMIN", "MODERATOR"})
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     public ResponseEntity<ApiResponse<AnimeContributionViewDTO>> create(@RequestBody AnimeContributionCreateDTO form) {
         CreateAnimeContributionCommand command = new CreateAnimeContributionCommand(form.animeId(), form.personId(), form.role());
         AnimeContribution animeContribution = createAnimeContributionUseCase.create(command);
@@ -63,9 +63,9 @@ public class AnimeContributionController {
     }
 
     @PutMapping("/{animeId}/{personId}")
-    @RolesAllowed({"ADMIN", "MODERATOR"})
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     public ResponseEntity<ApiResponse<AnimeContributionViewDTO>> update(
-            @PathVariable("animeId") String animeId,
+            @PathVariable("animeId") UUID animeId,
             @PathVariable("personId") UUID personId,
             @RequestBody AnimeContributionUpdateDTO form
     ) {
@@ -77,9 +77,9 @@ public class AnimeContributionController {
     }
 
     @DeleteMapping("/{animeId}/{personId}")
-    @RolesAllowed({"ADMIN", "MODERATOR"})
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     public ResponseEntity<ApiResponse<Object>> delete(
-            @PathVariable("animeId") String animeId,
+            @PathVariable("animeId") UUID animeId,
             @PathVariable("personId") UUID personId
     ) {
         DeleteAnimeContributionCommand command = new DeleteAnimeContributionCommand(animeId, personId);

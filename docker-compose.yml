@@ -52,7 +52,7 @@ services:
   user-db:
     image: mysql:8.0.30-debian
     expose:
-      - "3306:3306"
+      - "3306"
     environment:
       MYSQL_ROOT_PASSWORD: Admin@123
       MYSQL_DATABASE: keycloak  # Compartilhado: Keycloak + User Service (event_store)
@@ -65,7 +65,7 @@ services:
   anime-db:
     image: mongo:8.2.2-rc0-noble
     expose:
-      - "27017:27017"
+      - "27017"
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
       interval: 10s
@@ -75,40 +75,41 @@ services:
   rating-db:
     image: mongo:8.2.2-rc0-noble
     expose:
-      - "27017:27017"
+      - "27017"
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.9.4
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    ports:
-      - "2181:2181"
-
   kafka:
     image: confluentinc/cp-kafka:8.1.0
-    depends_on:
-      - zookeeper
+    container_name: kafka
     ports:
       - "9092:9092"
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_LISTENERS: "CONTROLLER://0.0.0.0:9093"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: [ "CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092 | grep '1'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   user-service:
     build:
       dockerfile: user-service/Dockerfile
     expose:
-      - "8082:8082"
+      - "8082"
     environment:
       DATASOURCE_URL: jdbc:mysql://user-db:3306/keycloak
       DATASOURCE_USERNAME: root
@@ -122,39 +123,43 @@ services:
       KEYCLOAK_ADMIN_CLIENT_ID: admin-cli
       SPRING_CLOUD_CONSUL_HOST: consul
       SPRING_CLOUD_CONSUL_PORT: 8500
-      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
       keycloak:
         condition: service_healthy
       kafka:
-        condition: service_started
+        condition: service_healthy
 
   anime-service:
     build:
       dockerfile: anime-service/Dockerfile
     expose:
-      - "8083:8083"
+      - "8083"
     environment:
       MONGODB_URI: mongodb://anime-db:27017/otaku_rating_db
       MONGODB_DATABASE: otaku_rating_db
       SPRING_CLOUD_CONSUL_HOST: consul
       SPRING_CLOUD_CONSUL_PORT: 8500
-      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
       anime-db:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
 
   rating-service:
     build:
       dockerfile: rating-service/Dockerfile
     expose:
-      - "8084:8084"
+      - "8084"
     environment:
       MONGODB_URI: mongodb://rating-db:27017/otaku_rating_db
       MONGODB_DATABASE: otaku_rating_db
       SPRING_CLOUD_CONSUL_HOST: consul
       SPRING_CLOUD_CONSUL_PORT: 8500
-      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
       rating-db:
+        condition: service_healthy
+      kafka:
         condition: service_healthy

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 public class FindAnimeAdapter implements FindAnimePort {
@@ -30,13 +31,13 @@ public class FindAnimeAdapter implements FindAnimePort {
     }
 
     @Override
-    public Optional<Anime> findById(String id) {
+    public Optional<Anime> findById(UUID id) {
         return animeMongoRepository.findById(id)
                 .map(animeInfraMapper::toModel);
     }
 
     @Override
-    public boolean existsById(String id) {
+    public boolean existsById(UUID id) {
         return animeMongoRepository.existsById(id);
     }
 

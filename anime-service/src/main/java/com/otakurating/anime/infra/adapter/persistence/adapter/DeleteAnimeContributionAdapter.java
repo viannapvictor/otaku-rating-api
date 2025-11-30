@@ -16,13 +16,13 @@ public class DeleteAnimeContributionAdapter implements DeleteAnimeContributionPo
     }
 
     @Override
-    public void deleteByAnimeIdAndPersonId(String animeId, UUID personId) {
+    public void deleteByAnimeIdAndPersonId(UUID animeId, UUID personId) {
         AnimeContributionIdentifier id = new AnimeContributionIdentifier(animeId, personId);
         animeContributionMongoRepository.deleteById(id);
     }
 
     @Override
-    public void deleteByAnimeId(String animeId) {
+    public void deleteByAnimeId(UUID animeId) {
         animeContributionMongoRepository.deleteByIdAnimeId(animeId);
     }
 

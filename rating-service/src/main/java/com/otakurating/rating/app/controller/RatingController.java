@@ -16,6 +16,7 @@ import com.otakurating.rating.core.port.in.GetRatingByIdUseCase;
 import com.otakurating.rating.core.port.in.GetUserRatingReviewUseCase;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,6 +59,7 @@ public class RatingController {
     }
 
     @PostMapping("/{id}/review")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<ReviewViewDTO>> createReview(
             @PathVariable("id") String id,
             @RequestBody ReviewCreateDTO form,

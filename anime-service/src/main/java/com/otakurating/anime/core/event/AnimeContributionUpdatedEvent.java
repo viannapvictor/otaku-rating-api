@@ -5,7 +5,7 @@ import com.otakurating.anime.core.model.CreditRole;
 import java.util.UUID;
 
 public final class AnimeContributionUpdatedEvent extends AnimeContributionEvent {
-    public AnimeContributionUpdatedEvent(String animeId, UUID personId, CreditRole creditRole) {
+    public AnimeContributionUpdatedEvent(UUID animeId, UUID personId, CreditRole creditRole) {
         super(animeId, personId, creditRole);
     }
 }

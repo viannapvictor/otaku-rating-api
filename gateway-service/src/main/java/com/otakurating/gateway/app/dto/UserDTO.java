@@ -1,17 +1,9 @@
 package com.otakurating.gateway.app.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UserDTO {
-    private String id;
-    private List<String> roles;
+public record UserDTO(String id, List<String> roles) {
 }

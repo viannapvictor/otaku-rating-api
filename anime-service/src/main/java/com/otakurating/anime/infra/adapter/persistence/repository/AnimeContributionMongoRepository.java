@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface AnimeContributionMongoRepository extends MongoRepository<AnimeContributionEntity, AnimeContributionIdentifier> {
-    void deleteByIdAnimeId(String animeId);
+    void deleteByIdAnimeId(UUID animeId);
     void deleteByIdPersonId(UUID personId);
-    List<AnimeContributionEntity> findByIdAnimeId(String animeId);
+    List<AnimeContributionEntity> findByIdAnimeId(UUID animeId);
 }

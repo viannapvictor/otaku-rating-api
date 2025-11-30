@@ -14,11 +14,11 @@ import java.util.UUID;
 public final class AnimeContribution {
     private final List<AnimeContributionEvent> events;
     private final UUID personId;
+    private final UUID animeId;
 
-    private String animeId;
     private CreditRole creditRole;
 
-    public AnimeContribution(String animeId, UUID personId, CreditRole creditRole) {
+    public AnimeContribution(UUID animeId, UUID personId, CreditRole creditRole) {
         this.animeId = animeId;
         this.personId = personId;
         this.creditRole = creditRole;
@@ -69,15 +69,11 @@ public final class AnimeContribution {
         return personId;
     }
 
-    public String getAnimeId() {
+    public UUID getAnimeId() {
         return animeId;
     }
 
     public CreditRole getCreditRole() {
         return creditRole;
-    }
-
-    public void setAnimeId(String animeId) {
-        this.animeId = animeId;
     }
 }

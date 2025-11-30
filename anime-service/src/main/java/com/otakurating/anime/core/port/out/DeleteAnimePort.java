@@ -1,5 +1,7 @@
 package com.otakurating.anime.core.port.out;
 
+import java.util.UUID;
+
 public interface DeleteAnimePort {
-    void deleteById(String id);
+    void deleteById(UUID id);
 }

@@ -10,16 +10,17 @@ import com.otakurating.anime.core.event.AnimeUpdatedEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 public final class Anime {
     private final List<AnimeEvent> events;
+    private final UUID id;
 
-    private String id;
     private AnimeTitle title;
     private AnimeDescription description;
     private AnimeRelease release;
 
-    public Anime(String id, AnimeTitle title, AnimeDescription description, AnimeRelease release) {
+    public Anime(UUID id, AnimeTitle title, AnimeDescription description, AnimeRelease release) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -31,7 +32,7 @@ public final class Anime {
         this.title = AnimeTitle.valueOf(command.getTitle());
         this.description = AnimeDescription.valueOf(command.getDescription());
         this.release = AnimeRelease.valueOf(command.getRelease());
-        this.id = generateIdentifier(this.title);
+        this.id = UUID.randomUUID();
         this.events = new ArrayList<>();
 
         AnimeEvent event = new AnimeCreatedEvent(
@@ -50,7 +51,7 @@ public final class Anime {
         return pulledEvents;
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
@@ -67,21 +68,18 @@ public final class Anime {
     }
 
     public void update(UpdateAnimeCommand command) {
-        String oldId = this.id;
-        if (!Objects.equals(command.getCurrentId(), this.id)) {
+        if (!Objects.equals(command.getId(), this.id)) {
             throw new IllegalArgumentException("The command must have the current id the same as the anime id.");
         }
         this.title = AnimeTitle.valueOf(command.getTitle());
         this.description = AnimeDescription.valueOf(command.getDescription());
         this.release = AnimeRelease.valueOf(command.getRelease());
-        this.id = generateIdentifier(this.title);
 
         AnimeEvent event = new AnimeUpdatedEvent(
                 this.id,
                 this.title.getValue(),
                 this.description.getValue(),
-                this.release.getValue(),
-                oldId
+                this.release.getValue()
         );
         this.events.add(event);
     }
@@ -94,18 +92,5 @@ public final class Anime {
                 this.release.getValue()
         );
         this.events.add(event);
-    }
-
-    private static String generateIdentifier(AnimeTitle title) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < title.getValue().length(); i++) {
-            char c = Character.toLowerCase(title.getValue().charAt(i));
-            if (c == ' ') {
-                sb.append('-');
-                continue;
-            }
-            sb.append(c);
-        }
-        return sb.toString();
     }
 }

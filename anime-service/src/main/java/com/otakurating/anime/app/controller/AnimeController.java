@@ -10,13 +10,14 @@ import com.otakurating.anime.app.response.mapper.AnimeViewMapper;
 import com.otakurating.anime.core.command.*;
 import com.otakurating.anime.core.model.Anime;
 import com.otakurating.anime.core.port.in.*;
-import jakarta.annotation.security.RolesAllowed;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/v1/anime")
@@ -64,7 +65,7 @@ public class AnimeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<AnimeViewDTO>> getById(@PathVariable("id") String id) {
+    public ResponseEntity<ApiResponse<AnimeViewDTO>> getById(@PathVariable("id") UUID id) {
         GetAnimeCommand command = new GetAnimeCommand(id);
         Anime anime = getAnimeUseCase.getById(command);
         AnimeViewDTO view = animeViewMapper.toEntity(anime);
@@ -73,7 +74,7 @@ public class AnimeController {
     }
 
     @PostMapping
-    @RolesAllowed({"ADMIN", "MODERATOR"})
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     public ResponseEntity<ApiResponse<AnimeViewDTO>> create(@RequestBody AnimeCreateDTO form) {
         CreateAnimeCommand command = new CreateAnimeCommand(form.title(), form.description(), form.release());
         Anime anime = createAnimeUseCase.create(command);
@@ -83,9 +84,9 @@ public class AnimeController {
     }
 
     @PutMapping("/{id}")
-    @RolesAllowed({"ADMIN", "MODERATOR"})
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     public ResponseEntity<ApiResponse<AnimeViewDTO>> update(
-            @PathVariable("id") String id,
+            @PathVariable("id") UUID id,
             @RequestBody AnimeUpdateDTO form
     ) {
         UpdateAnimeCommand command = new UpdateAnimeCommand(id, form.title(), form.description(), form.release());
@@ -96,8 +97,8 @@ public class AnimeController {
     }
 
     @DeleteMapping("/{id}")
-    @RolesAllowed({"ADMIN", "MODERATOR"})
-    public ResponseEntity<ApiResponse<Object>> delete(@PathVariable("id") String id) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
+    public ResponseEntity<ApiResponse<Object>> delete(@PathVariable("id") UUID id) {
         DeleteAnimeCommand command = new DeleteAnimeCommand(id);
         deleteAnimeUseCase.delete(command);
 

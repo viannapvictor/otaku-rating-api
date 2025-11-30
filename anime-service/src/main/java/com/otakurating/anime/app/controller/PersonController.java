@@ -10,10 +10,10 @@ import com.otakurating.anime.core.command.*;
 import com.otakurating.anime.core.model.Person;
 import com.otakurating.anime.app.request.dto.PageRequest;
 import com.otakurating.anime.core.port.in.*;
-import jakarta.annotation.security.RolesAllowed;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -69,7 +69,7 @@ public class PersonController {
     }
 
     @PostMapping
-    @RolesAllowed({"ADMIN", "MODERATOR"})
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     public ResponseEntity<ApiResponse<PersonViewDTO>> create(@RequestBody PersonCreateDTO form) {
         CreatePersonCommand command = new CreatePersonCommand(form.name(), form.description());
         Person person = createPersonUseCase.create(command);
@@ -79,7 +79,7 @@ public class PersonController {
     }
 
     @PutMapping("/{id}")
-    @RolesAllowed({"ADMIN", "MODERATOR"})
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     public ResponseEntity<ApiResponse<PersonViewDTO>> update(
             @PathVariable("id") UUID id,
             @RequestBody PersonUpdateDTO form
@@ -92,7 +92,7 @@ public class PersonController {
     }
 
     @DeleteMapping("/{id}")
-    @RolesAllowed({"ADMIN", "MODERATOR"})
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     public ResponseEntity<ApiResponse<Object>> delete(@PathVariable("id") UUID id) {
         DeletePersonCommand command = new DeletePersonCommand(id);
         deletePersonUseCase.delete(command);

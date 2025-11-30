@@ -5,17 +5,17 @@ import com.otakurating.anime.core.model.CreditRole;
 import java.util.UUID;
 
 public final class UpdateAnimeContributionCommand extends BaseCommand {
-    private final String animeId;
+    private final UUID animeId;
     private final UUID personId;
     private final CreditRole creditRole;
 
-    public UpdateAnimeContributionCommand(String animeId, UUID personId, CreditRole creditRole) {
+    public UpdateAnimeContributionCommand(UUID animeId, UUID personId, CreditRole creditRole) {
         this.animeId = animeId;
         this.personId = personId;
         this.creditRole = creditRole;
     }
 
-    public String getAnimeId() {
+    public UUID getAnimeId() {
         return animeId;
     }
 

@@ -5,11 +5,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Document(collection = "animes")
 public record AnimeEntity(
     @Id
-    String id,
+    UUID id,
 
     @Field(name = "title")
     String title,

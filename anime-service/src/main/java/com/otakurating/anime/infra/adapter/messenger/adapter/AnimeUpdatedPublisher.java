@@ -1,7 +1,7 @@
 package com.otakurating.anime.infra.adapter.messenger.adapter;
 
 import com.otakurating.anime.core.event.AnimeUpdatedEvent;
-import com.otakurating.anime.infra.adapter.messenger.dto.AnimeUpdatedEventDTO;
+import com.otakurating.anime.infra.adapter.messenger.dto.AnimeSimpleEventDTO;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -16,10 +16,9 @@ public class AnimeUpdatedPublisher {
 
     @EventListener
     public void publish(AnimeUpdatedEvent event) {
-        AnimeUpdatedEventDTO dto = new AnimeUpdatedEventDTO(
+        AnimeSimpleEventDTO dto = new AnimeSimpleEventDTO(
                 event.getEventId(),
                 event.getTimestamp(),
-                event.getOldAnimeId(),
                 event.getAnimeId()
         );
         streamBridge.send("anime-updated-out-0", dto);

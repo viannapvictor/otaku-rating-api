@@ -4,5 +4,5 @@ import com.otakurating.anime.core.model.CreditRole;
 
 import java.util.UUID;
 
-public record AnimeContributionCreateDTO(UUID personId, String animeId, CreditRole role) {
+public record AnimeContributionCreateDTO(UUID personId, UUID animeId, CreditRole role) {
 }
