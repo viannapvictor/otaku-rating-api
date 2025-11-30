@@ -56,4 +56,8 @@
     <logger name="io.micrometer.tracing" level="DEBUG"/>
     <logger name="io.opentelemetry" level="INFO"/>
 
+    <logger name="graylog-only" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_GELF"/>
+    </logger>
+
 </configuration>
