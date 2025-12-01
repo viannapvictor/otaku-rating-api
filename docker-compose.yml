@@ -1,15 +1,13 @@
 name: otaku_rating
 services:
   consul:
-    image: consul:1.15.4
+    image: hashicorp/consul:latest
     ports:
       - "8500:8500"
-    command: agent -dev -client=0.0.0.0
-    environment:
-      SPRING_CLOUD_CONSUL_HOST: consul
-      SPRING_CLOUD_CONSUL_PORT: 8500
+      - "8600:8600/udp"
+    command: "agent -dev -client=0.0.0.0 -ui"
 
-  gateway-service:
+  gateway-service-server:
     build:
       dockerfile: gateway-service/Dockerfile
     ports:
@@ -105,7 +103,7 @@ services:
       retries: 5
       start_period: 20s
 
-  user-service:
+  user-service-server:
     build:
       dockerfile: user-service/Dockerfile
     expose:
@@ -130,7 +128,7 @@ services:
       kafka:
         condition: service_healthy
 
-  anime-service:
+  anime-service-server:
     build:
       dockerfile: anime-service/Dockerfile
     expose:
@@ -147,7 +145,7 @@ services:
       kafka:
         condition: service_healthy
 
-  rating-service:
+  rating-service-server:
     build:
       dockerfile: rating-service/Dockerfile
     expose:

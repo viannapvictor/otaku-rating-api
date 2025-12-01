@@ -23,6 +23,8 @@ public class GatewayAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
+        SecurityContextHolder.clearContext();
+
         String userId = request.getHeader("X-User-Id");
         String role = request.getHeader("X-User-Role");
         if (userId != null && role != null) {
@@ -35,5 +37,11 @@ public class GatewayAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         filterChain.doFilter(request, response);
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.startsWith("/actuator");
     }
 }
