@@ -17,6 +17,11 @@ services:
     environment:
       SPRING_CLOUD_CONSUL_HOST: consul
       SPRING_CLOUD_CONSUL_PORT: 8500
+      GRAYLOG_HOST: graylog
+      GRAYLOG_PORT: 12201
+    depends_on:
+      consul:
+        condition: service_started
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.4.2
@@ -47,12 +52,13 @@ services:
       test: ['CMD-SHELL', '[ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(java.net.HttpURLConnection.HTTP_OK == ((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() ? 0 : 1); } }" > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:9000/health/live']
       interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 30
+      start_period: 120s
 
   user-db:
     image: mysql:8.0.30-debian
     expose:
-      - "3306:3306"
+      - 3306
     environment:
       MYSQL_ROOT_PASSWORD: Admin@123
       MYSQL_DATABASE: keycloak  # Compartilhado: Keycloak + User Service (event_store)
@@ -65,7 +71,7 @@ services:
   anime-db:
     image: mongo:8.2.2-rc0-noble
     expose:
-      - "27017:27017"
+      - 27017
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
       interval: 10s
@@ -98,7 +104,7 @@ services:
     build:
       dockerfile: user-service/Dockerfile
     expose:
-      - "8082:8082"
+      - 8082
     environment:
       DATASOURCE_URL: jdbc:mysql://user-db:3306/keycloak
       DATASOURCE_USERNAME: root
@@ -113,6 +119,8 @@ services:
       SPRING_CLOUD_CONSUL_HOST: consul
       SPRING_CLOUD_CONSUL_PORT: 8500
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      GRAYLOG_HOST: graylog
+      GRAYLOG_PORT: 12201
     depends_on:
       keycloak:
         condition: service_healthy
@@ -123,12 +131,79 @@ services:
     build:
       dockerfile: anime-service/Dockerfile
     expose:
-      - "8083:8083"
+      - 8083
     environment:
       MONGODB_URI: mongodb://anime-db:27017/otaku_rating_db
       MONGODB_DATABASE: otaku_rating_db
       SPRING_CLOUD_CONSUL_HOST: consul
       SPRING_CLOUD_CONSUL_PORT: 8500
+      GRAYLOG_HOST: graylog
+      GRAYLOG_PORT: 12201
     depends_on:
       anime-db:
         condition: service_healthy
+
+  # Graylog Stack - Centralized Logging
+  mongodb-graylog:
+    image: mongo:8.2.2-rc0-noble
+    expose:
+      - 27017
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  opensearch:
+    image: opensearchproject/opensearch:2.18.0
+    environment:
+      - discovery.type=single-node
+      - cluster.name=graylog
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - DISABLE_SECURITY_PLUGIN=true
+      - DISABLE_INSTALL_DEMO_CONFIG=true
+      - action.auto_create_index=true
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=Admin123
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    expose:
+      - 9200
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  graylog:
+    image: graylog/graylog:6.1
+    ports:
+      - "9000:9000"       # Graylog Web UI
+      - "12201:12201/udp" # GELF UDP
+      - "12201:12201/tcp" # GELF TCP
+      - "1514:1514"       # Syslog TCP
+      - "1514:1514/udp"   # Syslog UDP
+    environment:
+      GRAYLOG_PASSWORD_SECRET: somepasswordpepper
+      GRAYLOG_ROOT_PASSWORD_SHA2: 8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
+      GRAYLOG_HTTP_EXTERNAL_URI: http://localhost:9000/
+      GRAYLOG_MONGODB_URI: mongodb://mongodb-graylog:27017/graylog
+      GRAYLOG_ELASTICSEARCH_HOSTS: http://opensearch:9200
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+    depends_on:
+      mongodb-graylog:
+        condition: service_healthy
+      opensearch:
+        condition: service_healthy
+      consul:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/api/system/lbstatus || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
