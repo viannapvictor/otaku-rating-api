@@ -8,6 +8,8 @@ COPY gateway-service/src gateway-service/src
 COPY gateway-service/pom.xml gateway-service/pom.xml
 COPY user-service/src user-service/src
 COPY user-service/pom.xml user-service/pom.xml
+COPY rating-service/src rating-service/src
+COPY rating-service/pom.xml rating-service/pom.xml
 COPY pom.xml pom.xml
 
 RUN mvn clean install -DskipTests

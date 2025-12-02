@@ -11,6 +11,49 @@ spring:
       database: ${MONGODB_DATABASE}
       auto-index-creation: true
 
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: ${KAFKA_BOOTSTRAP_SERVERS}
+
+      bindings:
+        anime-created-out-0:
+          destination: anime-created-events
+          content-type: application/json
+
+        anime-updated-out-0:
+          destination: anime-updated-events
+          content-type: application/json
+
+        anime-deleted-out-0:
+          destination: anime-deleted-events
+          content-type: application/json
+
+        person-created-out-0:
+          destination: person-created-events
+          content-type: application/json
+
+        person-updated-out-0:
+          destination: person-updated-events
+          content-type: application/json
+
+        person-deleted-out-0:
+          destination: person-deleted-events
+          content-type: application/json
+
+        user-contribution-created-out-0:
+          destination: user-contribution-created-events
+          content-type: application/json
+
+        user-contribution-updated-out-0:
+          destination: user-contribution-updated-events
+          content-type: application/json
+
+        user-contribution-deleted-out-0:
+          destination: user-contribution-deleted-events
+          content-type: application/json
+
 management:
   endpoints:
     web:

@@ -1,51 +1,63 @@
 package com.otakurating.gateway.app.config;
 
+import com.otakurating.gateway.app.dto.ApiResponse;
 import com.otakurating.gateway.app.dto.UserDTO;
-import lombok.RequiredArgsConstructor;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
-import org.springframework.http.HttpCookie;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Component
-@RequiredArgsConstructor
 public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
-    private final WebClient.Builder webClientBuilder;
+    private final WebClient webClient;
+
+    public JwtAuthenticationFilter(
+            @LoadBalanced WebClient.Builder webClientBuilder
+    ) {
+        this.webClient = webClientBuilder.build();
+    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String userId = exchange.getRequest().getHeaders().getFirst("X-User-Id");
-        String userRole = exchange.getRequest().getHeaders().getFirst("X-User-Role");
-        if (userId != null || userRole != null) {
-            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            return exchange.getResponse().setComplete();
-        }
-        String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if (authHeader == null || authHeader.isBlank()) {
-            return chain.filter(exchange);
-        }
-        return webClientBuilder.build()
-                .get()
-                .uri("lb://user-service/api/user/me")
-                .header(HttpHeaders.AUTHORIZATION, authHeader)
+        return webClient.get()
+                .uri("http://user-service/api/user/me")
+                .cookies(c -> exchange.getRequest()
+                    .getCookies()
+                    .forEach((name, cookieList) ->
+                        cookieList.forEach(cookie ->
+                            c.add(cookie.getName(), cookie.getValue())
+                        )
+                    )
+                )
                 .retrieve()
-                .bodyToMono(UserDTO.class)
+                .bodyToMono(new ParameterizedTypeReference<ApiResponse<UserDTO>>() {})
                 .flatMap(user -> {
-                    exchange.getRequest().mutate()
-                            .header("X-User-Id", user.getId())
-                            .header("X-User-Role", user.getRoles().getFirst())
+                    ServerHttpRequest newRequest = exchange.getRequest()
+                            .mutate()
+                            .header("X-User-Id", user.result().id())
+                            .header("X-User-Role", user.result().roles() == null ? "" : user.result().roles().getFirst())
                             .build();
-                    return chain.filter(exchange);
+                    ServerWebExchange newExchange = exchange.mutate()
+                            .request(newRequest)
+                            .build();
+                    return chain.filter(newExchange);
                 })
                 .onErrorResume(e -> {
-                    exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                    return exchange.getResponse().setComplete();
+                    ServerHttpRequest newRequest = exchange.getRequest()
+                            .mutate()
+                            .header("X-User-Id", "")
+                            .header("X-User-Role", "")
+                            .build();
+                    ServerWebExchange newExchange = exchange.mutate()
+                            .request(newRequest)
+                            .build();
+                    return chain.filter(newExchange);
                 });
     }
 

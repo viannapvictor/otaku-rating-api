@@ -1,15 +1,13 @@
 name: otaku_rating
 services:
   consul:
-    image: consul:1.15.4
+    image: hashicorp/consul:latest
     ports:
       - "8500:8500"
-    command: agent -dev -client=0.0.0.0
-    environment:
-      SPRING_CLOUD_CONSUL_HOST: consul
-      SPRING_CLOUD_CONSUL_PORT: 8500
+      - "8600:8600/udp"
+    command: "agent -dev -client=0.0.0.0 -ui"
 
-  gateway-service:
+  gateway-service-server:
     build:
       dockerfile: gateway-service/Dockerfile
     ports:
@@ -22,6 +20,8 @@ services:
     depends_on:
       consul:
         condition: service_started
+      graylog:
+        condition: service_healthy
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.4.2
@@ -52,13 +52,13 @@ services:
       test: ['CMD-SHELL', '[ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(java.net.HttpURLConnection.HTTP_OK == ((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() ? 0 : 1); } }" > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:9000/health/live']
       interval: 10s
       timeout: 5s
-      retries: 30
-      start_period: 120s
+      retries: 20
+      start_period: 30s
 
   user-db:
     image: mysql:8.0.30-debian
     expose:
-      - 3306
+      - "3306"
     environment:
       MYSQL_ROOT_PASSWORD: Admin@123
       MYSQL_DATABASE: keycloak  # Compartilhado: Keycloak + User Service (event_store)
@@ -71,40 +71,51 @@ services:
   anime-db:
     image: mongo:8.2.2-rc0-noble
     expose:
-      - 27017
+      - "27017"
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.5.0
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    ports:
-      - "2181:2181"
+  rating-db:
+    image: mongo:8.2.2-rc0-noble
+    expose:
+      - "27017"
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   kafka:
-    image: confluentinc/cp-kafka:7.5.0
-    depends_on:
-      - zookeeper
+    image: confluentinc/cp-kafka:8.1.0
+    container_name: kafka
     ports:
       - "9092:9092"
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_LISTENERS: "CONTROLLER://0.0.0.0:9093"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: [ "CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092 | grep '1'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
-  user-service:
+  user-service-server:
     build:
       dockerfile: user-service/Dockerfile
     expose:
-      - 8082
+      - "8082"
     environment:
       DATASOURCE_URL: jdbc:mysql://user-db:3306/keycloak
       DATASOURCE_USERNAME: root
@@ -118,32 +129,65 @@ services:
       KEYCLOAK_ADMIN_CLIENT_ID: admin-cli
       SPRING_CLOUD_CONSUL_HOST: consul
       SPRING_CLOUD_CONSUL_PORT: 8500
-      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       GRAYLOG_HOST: graylog
       GRAYLOG_PORT: 12201
     depends_on:
+      consul:
+        condition: service_started
       keycloak:
         condition: service_healthy
       kafka:
-        condition: service_started
+        condition: service_healthy
+      graylog:
+        condition: service_healthy
 
-  anime-service:
+  anime-service-server:
     build:
       dockerfile: anime-service/Dockerfile
     expose:
-      - 8083
+      - "8083"
     environment:
       MONGODB_URI: mongodb://anime-db:27017/otaku_rating_db
       MONGODB_DATABASE: otaku_rating_db
       SPRING_CLOUD_CONSUL_HOST: consul
       SPRING_CLOUD_CONSUL_PORT: 8500
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       GRAYLOG_HOST: graylog
       GRAYLOG_PORT: 12201
     depends_on:
+      consul:
+        condition: service_started
       anime-db:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
+      graylog:
+        condition: service_healthy
 
-  # Graylog Stack - Centralized Logging
+  rating-service-server:
+    build:
+      dockerfile: rating-service/Dockerfile
+    expose:
+      - "8084"
+    environment:
+      MONGODB_URI: mongodb://rating-db:27017/otaku_rating_db
+      MONGODB_DATABASE: otaku_rating_db
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      GRAYLOG_HOST: graylog
+      GRAYLOG_PORT: 12201
+    depends_on:
+      consul:
+        condition: service_started
+      rating-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      graylog:
+        condition: service_healthy
+
   mongodb-graylog:
     image: mongo:8.2.2-rc0-noble
     expose:
@@ -155,7 +199,7 @@ services:
       retries: 5
 
   opensearch:
-    image: opensearchproject/opensearch:2.18.0
+    image: opensearchproject/opensearch:2
     environment:
       - discovery.type=single-node
       - cluster.name=graylog
@@ -172,38 +216,35 @@ services:
         soft: 65536
         hard: 65536
     expose:
-      - 9200
+      - "9200"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -vq '\"status\":\"red\"'"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   graylog:
-    image: graylog/graylog:6.1
+    image: graylog/graylog:7.0
     ports:
-      - "9000:9000"       # Graylog Web UI
-      - "12201:12201/udp" # GELF UDP
-      - "12201:12201/tcp" # GELF TCP
-      - "1514:1514"       # Syslog TCP
-      - "1514:1514/udp"   # Syslog UDP
+      - "9000:9000"
+      - "12201:12201/udp"
+      - "12201:12201/tcp"
+      - "1514:1514"
+      - "1514:1514/udp"
     environment:
       GRAYLOG_PASSWORD_SECRET: somepasswordpepper
       GRAYLOG_ROOT_PASSWORD_SHA2: 8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
       GRAYLOG_HTTP_EXTERNAL_URI: http://localhost:9000/
       GRAYLOG_MONGODB_URI: mongodb://mongodb-graylog:27017/graylog
       GRAYLOG_ELASTICSEARCH_HOSTS: http://opensearch:9200
-      SPRING_CLOUD_CONSUL_HOST: consul
-      SPRING_CLOUD_CONSUL_PORT: 8500
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:9000/api/system/lbstatus || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
     depends_on:
       mongodb-graylog:
         condition: service_healthy
       opensearch:
         condition: service_healthy
-      consul:
-        condition: service_started
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9000/api/system/lbstatus || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5

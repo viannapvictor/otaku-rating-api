@@ -33,9 +33,10 @@ spring:
       kafka:
         binder:
           brokers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
       bindings:
         user-deleted-out-0:
-          destination: user-events
+          destination: user-deleted-events
           content-type: application/json
 
 keycloak:

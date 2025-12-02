@@ -1,0 +1,84 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: rating-service
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      database: ${MONGODB_DATABASE}
+      auto-index-creation: true
+
+  cloud:
+    function:
+      definition: animeCreated;animeDeleted;userDeleted
+
+    stream:
+      kafka:
+        binder:
+          brokers: ${KAFKA_BOOTSTRAP_SERVERS}
+
+      bindings:
+        rating-created-out-0:
+          destination: rating-created-events
+          content-type: application/json
+
+        rating-updated-out-0:
+          destination: rating-updated-events
+          content-type: application/json
+
+        rating-deleted-out-0:
+          destination: rating-deleted-events
+          content-type: application/json
+
+        review-created-out-0:
+          destination: review-created-events
+          content-type: application/json
+
+        review-updated-out-0:
+          destination: review-updated-events
+          content-type: application/json
+
+        review-deleted-out-0:
+          destination: review-deleted-events
+          content-type: application/json
+
+        user-reviews-deleted-out-0:
+          destination: user-reviews-deleted-events
+          content-type: application/json
+
+        animeCreated-in-0:
+          destination: anime-created-events
+          group: rating-service
+
+        animeDeleted-in-0:
+          destination: anime-deleted-events
+          group: rating-service
+
+        userDeleted-in-0:
+          destination: user-deleted-events
+          group: user-service
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  tracing:
+    sampling:
+      probability: 1.0
+    enabled: true
+
+graylog:
+  host: ${GRAYLOG_HOST:localhost}
+  port: ${GRAYLOG_PORT:12201}
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
