@@ -2,12 +2,15 @@ package com.otakurating.anime.infra.adapter.messenger.adapter;
 
 import com.otakurating.anime.core.event.AnimeContributionDeletedEvent;
 import com.otakurating.anime.infra.adapter.messenger.dto.AnimeContributionSimpleEventDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AnimeContributionDeletedPublisher {
+    private static final Logger log = LoggerFactory.getLogger(AnimeContributionDeletedPublisher.class);
     private final StreamBridge streamBridge;
 
     public AnimeContributionDeletedPublisher(StreamBridge streamBridge) {
@@ -23,5 +26,6 @@ public class AnimeContributionDeletedPublisher {
                 event.getPersonId()
         );
         streamBridge.send("anime-contribution-deleted-out-0", dto);
+        log.info("Anime contribution deleted event sent to stream. animeId={} | personId={}", event.getAnimeId(), event.getPersonId());
     }
 }
