@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Values.rating_service.name }}-deploy"
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.rating_service.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.rating_service.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.rating_service.name }}
+    spec:
+      containers:
+        - name: {{ .Values.rating_service.name }}
+          image: "{{ .Values.rating_service.image }}:{{ .Values.rating_service.tag }}"
+          imagePullPolicy: {{ .Values.rating_service.imagePullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: "{{ .Values.rating_service.name }}-cm"
+      restartPolicy: Always

@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Values.anime_service.name }}-deploy"
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.anime_service.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.anime_service.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.anime_service.name }}
+    spec:
+      containers:
+        - name: {{ .Values.anime_service.name }}
+          image: "{{ .Values.anime_service.image }}:{{ .Values.anime_service.tag }}"
+          imagePullPolicy: {{ .Values.anime_service.imagePullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: "{{ .Values.anime_service.name }}-cm"
+      restartPolicy: Always

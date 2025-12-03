@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Values.keycloak.name }}-cm"
+  namespace: {{ .Release.Namespace }}
+data:
+  KC_DB: "{{ .Values.keycloak.cm.KC_DB }}"
+  KC_DB_URL: "jdbc:mysql://{{ .Values.user_db.name }}-svc:{{ .Values.user_db.service.port }}/{{ .Values.user_db.secrets.MYSQL_DATABASE }}"
+  KC_HOSTNAME_STRICT: "{{ .Values.keycloak.cm.KC_HOSTNAME_STRICT }}"
+  KC_HTTP_ENABLED: "{{ .Values.keycloak.cm.KC_HTTP_ENABLED }}"
+  KC_HEALTH_ENABLED: "{{ .Values.keycloak.cm.KC_HEALTH_ENABLED }}"
+  KC_METRICS_ENABLED: "{{ .Values.keycloak.cm.KC_METRICS_ENABLED }}"
+  otaku-rating-api.json: |-
+    {{ .Files.Get .Values.keycloak.cm.IMPORT_FILE | nindent 4 }}

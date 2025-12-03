@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Values.gateway_service.name }}-deploy"
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.gateway_service.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.gateway_service.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.gateway_service.name }}
+    spec:
+      containers:
+        - name: {{ .Values.gateway_service.name }}
+          image: "{{ .Values.gateway_service.image }}:{{ .Values.gateway_service.tag }}"
+          imagePullPolicy: {{ .Values.gateway_service.imagePullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: "{{ .Values.gateway_service.name }}-cm"
+      restartPolicy: Always

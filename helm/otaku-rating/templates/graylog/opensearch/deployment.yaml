@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Values.graylog_opensearch.name }}-deploy"
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.graylog_opensearch.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.graylog_opensearch.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.graylog_opensearch.name }}
+    spec:
+      initContainers:
+        - name: set-ulimits
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              ulimit -l {{ .Values.graylog_opensearch.ulimits.MEMLOCK_SOFT }}
+              ulimit -n {{ .Values.graylog_opensearch.ulimits.NOFILE_SOFT }}
+          securityContext:
+            privileged: true
+      containers:
+        - name: {{ .Values.graylog_opensearch.name }}
+          image: "{{ .Values.graylog_opensearch.image }}:{{ .Values.graylog_opensearch.tag }}"
+          imagePullPolicy: {{ .Values.graylog_opensearch.imagePullPolicy }}
+          securityContext:
+            capabilities:
+              add: [ "IPC_LOCK" ]
+          envFrom:
+            - configMapRef:
+                name: "{{ .Values.graylog_opensearch.name }}-cm"
+            - secretRef:
+                name: "{{ .Values.graylog_opensearch.name }}-secret"
+
+          resources:
+            requests:
+              cpu: {{ .Values.graylog_opensearch.resources.requests.cpu }}
+              memory: {{ .Values.graylog_opensearch.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.graylog_opensearch.resources.limits.cpu }}
+              memory: {{ .Values.graylog_opensearch.resources.limits.memory }}
+
+      restartPolicy: Always

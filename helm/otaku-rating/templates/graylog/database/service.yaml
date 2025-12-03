@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{.Release.Namespace}}
+  name: "{{.Values.graylog_db.name}}-svc"
+spec:
+  selector:
+    app: {{ .Values.graylog_db.name }}
+  type: {{.Values.graylog_db.service.type}}
+  ports:
+    - protocol: TCP
+      {{- if (eq .Values.graylog_db.service.type "NodePort")}}
+      nodePort: {{.Values.graylog_db.service.nodePort}}
+      {{- end}}
+      targetPort: {{.Values.graylog_db.service.targetPort}}
+      port: {{.Values.graylog_db.service.port}}

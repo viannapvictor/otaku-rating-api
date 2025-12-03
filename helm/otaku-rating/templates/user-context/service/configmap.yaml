@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Values.user_service.name }}-cm"
+  namespace: {{ .Release.Namespace }}
+data:
+  SERVICE_HOST: "{{ .Values.user_service.name }}-svc"
+  DATASOURCE_URL: "jdbc:mysql://{{ .Values.user_db.name }}-svc:{{ .Values.user_db.service.port }}/{{ .Values.user_db.secrets.MYSQL_DATABASE }}"
+  KEYCLOAK_AUTH_SERVER_URL: "http://{{ .Values.keycloak.name }}-svc:{{ .Values.keycloak.service.port }}"
+  KEYCLOAK_REALM: "{{ .Values.user_service.cm.KEYCLOAK_REALM }}"
+  KEYCLOAK_CLIENT_ID: "{{ .Values.user_service.cm.KEYCLOAK_CLIENT_ID }}"
+  KEYCLOAK_ADMIN_CLIENT_ID: "{{ .Values.user_service.cm.KEYCLOAK_ADMIN_CLIENT_ID }}"
+  SPRING_CLOUD_CONSUL_HOST: "{{ .Values.consul.name }}-svc"
+  SPRING_CLOUD_CONSUL_PORT: "{{ .Values.consul.service.http.port }}"
+  KAFKA_BOOTSTRAP_SERVERS: "{{ .Values.kafka.name }}-svc:{{ .Values.kafka.service.broker.port }}"
+  GRAYLOG_HOST: "{{ .Values.graylog.name }}-svc"
+  GRAYLOG_PORT: "{{ .Values.graylog.service.gelf.port }}"

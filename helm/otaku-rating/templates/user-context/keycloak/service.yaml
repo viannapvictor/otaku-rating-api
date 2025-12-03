@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{.Release.Namespace}}
+  name: "{{.Values.keycloak.name}}-svc"
+spec:
+  selector:
+    app: {{ .Values.keycloak.name }}
+  type: {{.Values.keycloak.service.type}}
+  ports:
+    - protocol: TCP
+      {{- if (eq .Values.keycloak.service.type "NodePort")}}
+      nodePort: {{.Values.keycloak.service.nodePort}}
+      {{- end}}
+      targetPort: {{.Values.keycloak.service.targetPort}}
+      port: {{.Values.keycloak.service.port}}

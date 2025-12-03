@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{.Release.Namespace}}
+  name: "{{.Values.anime_db.name}}-svc"
+spec:
+  selector:
+    app: {{ .Values.anime_db.name }}
+  type: {{.Values.anime_db.service.type}}
+  ports:
+    - protocol: TCP
+      {{- if (eq .Values.anime_db.service.type "NodePort")}}
+      nodePort: {{.Values.anime_db.service.nodePort}}
+      {{- end}}
+      targetPort: {{.Values.anime_db.service.targetPort}}
+      port: {{.Values.anime_db.service.port}}

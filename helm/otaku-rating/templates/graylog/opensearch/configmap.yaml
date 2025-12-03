@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Values.graylog_opensearch.name }}-cm"
+  namespace: {{ .Release.Namespace }}
+data:
+  discovery.type: "{{ .Values.graylog_opensearch.cm.DISCOVERY_TYPE }}"
+  cluster.name: "{{ .Values.graylog_opensearch.cm.CLUSTER_NAME }}"
+  action.auto_create_index: "{{ .Values.graylog_opensearch.cm.AUTO_CREATE_INDEX }}"
+  OPENSEARCH_JAVA_OPTS: "{{ .Values.graylog_opensearch.cm.JAVA_OPTS }}"
+  DISABLE_SECURITY_PLUGIN: "{{ .Values.graylog_opensearch.cm.DISABLE_SECURITY_PLUGIN }}"
+  DISABLE_INSTALL_DEMO_CONFIG: "{{ .Values.graylog_opensearch.cm.DISABLE_INSTALL_DEMO_CONFIG }}"

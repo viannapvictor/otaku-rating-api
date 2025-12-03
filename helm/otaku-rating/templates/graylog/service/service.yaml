@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{.Release.Namespace}}
+  name: "{{.Values.graylog.name}}-svc"
+spec:
+  selector:
+    app: {{ .Values.graylog.name }}
+  type: {{.Values.graylog.service.type}}
+  ports:
+    - name: http
+      protocol: TCP
+      targetPort: {{ .Values.graylog.service.http.targetPort }}
+      port: {{ .Values.graylog.service.http.port }}
+      {{- if (eq .Values.graylog.service.type "NodePort")}}
+      nodePort: {{ .Values.graylog.service.http.nodePort }}
+      {{- end}}
+
+    - name: gelf-udp
+      protocol: UDP
+      targetPort: {{ .Values.graylog.service.gelf.targetPort }}
+      port: {{ .Values.graylog.service.gelf.port }}
+
+    - name: gelf-tcp
+      protocol: TCP
+      targetPort: {{ .Values.graylog.service.gelf.targetPort }}
+      port: {{ .Values.graylog.service.gelf.port }}
+
+    - name: syslog-udp
+      protocol: UDP
+      targetPort: {{ .Values.graylog.service.syslog.targetPort }}
+      port: {{ .Values.graylog.service.syslog.port }}
+
+    - name: syslog-tcp
+      protocol: TCP
+      targetPort: {{ .Values.graylog.service.syslog.targetPort }}
+      port: {{ .Values.graylog.service.syslog.port }}
