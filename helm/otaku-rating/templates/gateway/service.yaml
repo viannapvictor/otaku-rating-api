@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{.Release.Namespace}}
+  name: "{{.Values.gateway_service.name}}-svc"
+spec:
+  selector:
+    app: {{ .Values.gateway_service.name }}
+  type: {{.Values.gateway_service.service.type}}
+  ports:
+    - protocol: TCP
+      {{- if (eq .Values.gateway_service.service.type "NodePort")}}
+      nodePort: {{.Values.gateway_service.service.nodePort}}
+      {{- end}}
+      targetPort: {{.Values.gateway_service.service.targetPort}}
+      port: {{.Values.gateway_service.service.port}}

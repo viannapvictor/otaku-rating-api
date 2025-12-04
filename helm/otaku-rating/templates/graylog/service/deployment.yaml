@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Values.graylog.name }}-deploy"
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.graylog.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.graylog.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.graylog.name }}
+    spec:
+      containers:
+        - name: {{ .Values.graylog.name }}
+          image: "{{ .Values.graylog.image }}:{{ .Values.graylog.tag }}"
+          imagePullPolicy: {{ .Values.graylog.imagePullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: "{{ .Values.graylog.name }}-cm"
+            - secretRef:
+                name: "{{ .Values.graylog.name }}-secret"
+      restartPolicy: Always

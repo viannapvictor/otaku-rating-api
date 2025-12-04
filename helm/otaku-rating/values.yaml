@@ -1,0 +1,244 @@
+anime_service:
+  name: anime-service
+  replicas: 1
+  image: otakurating/anime-service
+  tag: "latest"
+  imagePullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8083
+    targetPort: 8083
+  cm:
+    DATABASE_NAME: "otaku_rating_db"
+
+anime_db:
+  name: anime-db
+  replicas: 1
+  image: mongo
+  tag: "8.2.2-noble"
+  imagePullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 27017
+    targetPort: 27017
+
+rating_service:
+  name: rating-service
+  replicas: 1
+  image: otakurating/rating-service
+  tag: "latest"
+  imagePullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8084
+    targetPort: 8084
+  cm:
+    DATABASE_NAME: "otaku_rating_db"
+
+rating_db:
+  name: rating-db
+  replicas: 1
+  image: mongo
+  tag: "8.2.2-noble"
+  imagePullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 27017
+    targetPort: 27017
+
+user_service:
+  name: user-service
+  replicas: 1
+  image: otakurating/user-service
+  tag: "latest"
+  imagePullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8082
+    targetPort: 8082
+  cm:
+    KEYCLOAK_REALM: "otaku-rating-api"
+    KEYCLOAK_CLIENT_ID: "otaku-rating-api-client"
+    KEYCLOAK_ADMIN_CLIENT_ID: "admin-cli"
+  secrets:
+    DATASOURCE_USERNAME: "root"
+    KEYCLOAK_CLIENT_SECRET: "tryeur6JeDE4dAJ2qxjEpkE19NbbNCc0"
+
+keycloak:
+  name: keycloak
+  replicas: 1
+  image: quay.io/keycloak/keycloak
+  tag: "26.4.2"
+  imagePullPolicy: IfNotPresent
+  command:
+    - "/bin/sh"
+    - "-c"
+    - |
+      /opt/keycloak/bin/kc.sh build --health-enabled=true --metrics-enabled=true
+      exec /opt/keycloak/bin/kc.sh start --optimized --import-realm
+  service:
+    type: NodePort
+    port: 8080
+    targetPort: 8080
+    nodePort: 30100
+  cm:
+    KC_DB: "mysql"
+    KC_HOSTNAME_STRICT: "false"
+    KC_HTTP_ENABLED: "true"
+    KC_HEALTH_ENABLED: "true"
+    KC_METRICS_ENABLED: "true"
+    IMPORT_FILE: "files/user-context/keycloak/keycloak-realm.json"
+  secrets:
+    KC_DB_USERNAME: "root"
+    KC_BOOTSTRAP_ADMIN_USERNAME: "admin123"
+    KC_BOOTSTRAP_ADMIN_PASSWORD: "admin123"
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "1Gi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+
+user_db:
+  name: user-db
+  replicas: 1
+  image: mysql
+  tag: "8.0.30-debian"
+  imagePullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 3306
+    targetPort: 3306
+  secrets:
+    MYSQL_ROOT_PASSWORD: "Admin@123"
+    MYSQL_DATABASE: "keycloak"
+
+gateway_service:
+  name: gateway-service
+  replicas: 1
+  image: otakurating/gateway-service
+  tag: "latest"
+  imagePullPolicy: IfNotPresent
+  service:
+    type: NodePort
+    port: 8081
+    targetPort: 8081
+    nodePort: 30070
+
+consul:
+  name: consul
+  replicas: 1
+  image: hashicorp/consul
+  tag: "latest"
+  imagePullPolicy: IfNotPresent
+  command:
+    - "consul"
+    - "agent"
+    - "-dev"
+    - "-client=0.0.0.0"
+    - "-ui"
+  service:
+    type: NodePort
+    http:
+      port: 8500
+      targetPort: 8500
+      nodePort: 30080
+    dns:
+      port: 8600
+      targetPort: 8600
+
+graylog:
+  name: graylog
+  replicas: 1
+  image: graylog/graylog
+  tag: "7.0"
+  imagePullPolicy: IfNotPresent
+  service:
+    type: NodePort
+    http:
+      port: 9000
+      targetPort: 9000
+      nodePort: 30090
+    gelf:
+      port: 12201
+      targetPort: 12201
+    syslog:
+      port: 1514
+      targetPort: 1514
+  cm:
+    GRAYLOG_HTTP_BIND_ADDRESS: "0.0.0.0:9000"
+    GRAYLOG_HTTP_EXTERNAL_URI: "http://192.168.49.2:30090/"
+    GRAYLOG_HTTP_ENABLE_CORS: "true"
+  secrets:
+    GRAYLOG_PASSWORD_SECRET: "somepasswordpepper"
+    GRAYLOG_ROOT_PASSWORD_SHA2: "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"
+
+graylog_opensearch:
+  name: graylog-opensearch
+  replicas: 1
+  image: opensearchproject/opensearch
+  tag: "2"
+  imagePullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 9200
+    targetPort: 9200
+  cm:
+    DISCOVERY_TYPE: "single-node"
+    CLUSTER_NAME: "graylog"
+    JAVA_OPTS: "-Xms512m -Xmx512m"
+    DISABLE_SECURITY_PLUGIN: "true"
+    DISABLE_INSTALL_DEMO_CONFIG: "true"
+    AUTO_CREATE_INDEX: "true"
+  secrets:
+    INITIAL_ADMIN_PASSWORD: "Admin123"
+  ulimits:
+    MEMLOCK_SOFT: -1
+    MEMLOCK_HARD: -1
+    NOFILE_SOFT: 65536
+    NOFILE_HARD: 65536
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "1Gi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+
+graylog_db:
+  name: graylog-db
+  replicas: 1
+  image: mongo
+  tag: "8.2.2-noble"
+  imagePullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 27017
+    targetPort: 27017
+
+kafka:
+  name: kafka
+  replicas: 1
+  image: confluentinc/cp-kafka
+  tag: "8.1.0"
+  imagePullPolicy: IfNotPresent
+  service:
+    broker:
+      type: ClusterIP
+      port: 9092
+      targetPort: 9092
+    controller:
+      port: 9093
+      targetPort: 9093
+  cm:
+    KAFKA_PROCESS_ROLES: "broker,controller"
+    KAFKA_NODE_ID: "1"
+    KAFKA_CONTROLLER_LISTENERS: "CONTROLLER://0.0.0.0:9093"
+    KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+    KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
+    KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka-hs:9092"
+    KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
+    KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+    KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka-hs:9093"
+    KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"

@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Values.user_db.name }}-deploy"
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.user_db.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.user_db.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.user_db.name }}
+    spec:
+      containers:
+        - name: {{ .Values.user_db.name }}
+          image: "{{ .Values.user_db.image }}:{{ .Values.user_db.tag }}"
+          imagePullPolicy: {{ .Values.user_db.imagePullPolicy }}
+          envFrom:
+            - secretRef:
+                name: "{{ .Values.user_db.name }}-secret"
+      restartPolicy: Always

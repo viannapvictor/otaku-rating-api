@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Values.keycloak.name }}-deploy"
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.keycloak.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.keycloak.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.keycloak.name }}
+    spec:
+      containers:
+        - name: {{ .Values.keycloak.name }}
+          image: "{{ .Values.keycloak.image }}:{{ .Values.keycloak.tag }}"
+          imagePullPolicy: {{ .Values.keycloak.imagePullPolicy }}
+          command: {{ .Values.keycloak.command | toJson }}
+          envFrom:
+            - configMapRef:
+                name: "{{ .Values.keycloak.name }}-cm"
+            - secretRef:
+                name: "{{ .Values.keycloak.name }}-secret"
+
+          resources:
+            requests:
+              cpu: {{ .Values.keycloak.resources.requests.cpu }}
+              memory: {{ .Values.keycloak.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.keycloak.resources.limits.cpu }}
+              memory: {{ .Values.keycloak.resources.limits.memory }}
+
+          volumeMounts:
+            - name: realm-volume
+              mountPath: /opt/keycloak/data/import
+
+      volumes:
+        - name: realm-volume
+          configMap:
+            name: "{{ .Values.keycloak.name }}-cm"
+      restartPolicy: Always

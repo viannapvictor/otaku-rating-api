@@ -13,6 +13,7 @@ services:
     ports:
       - "8081:8081"
     environment:
+      SERVICE_HOST: gateway-service-server
       SPRING_CLOUD_CONSUL_HOST: consul
       SPRING_CLOUD_CONSUL_PORT: 8500
       GRAYLOG_HOST: graylog
@@ -117,6 +118,7 @@ services:
     expose:
       - "8082"
     environment:
+      SERVICE_HOST: user-service-server
       DATASOURCE_URL: jdbc:mysql://user-db:3306/keycloak
       DATASOURCE_USERNAME: root
       DATASOURCE_PASSWORD: Admin@123
@@ -148,6 +150,7 @@ services:
     expose:
       - "8083"
     environment:
+      SERVICE_HOST: anime-service-server
       MONGODB_URI: mongodb://anime-db:27017/otaku_rating_db
       MONGODB_DATABASE: otaku_rating_db
       SPRING_CLOUD_CONSUL_HOST: consul
@@ -171,6 +174,7 @@ services:
     expose:
       - "8084"
     environment:
+      SERVICE_HOST: rating-service-server
       MONGODB_URI: mongodb://rating-db:27017/otaku_rating_db
       MONGODB_DATABASE: otaku_rating_db
       SPRING_CLOUD_CONSUL_HOST: consul

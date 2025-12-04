@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{.Release.Namespace}}
+  name: "{{.Values.anime_service.name}}-svc"
+spec:
+  selector:
+    app: {{ .Values.anime_service.name }}
+  type: {{.Values.anime_service.service.type}}
+  ports:
+    - protocol: TCP
+      {{- if (eq .Values.anime_service.service.type "NodePort")}}
+      nodePort: {{.Values.anime_service.service.nodePort}}
+      {{- end}}
+      targetPort: {{.Values.anime_service.service.targetPort}}
+      port: {{.Values.anime_service.service.port}}

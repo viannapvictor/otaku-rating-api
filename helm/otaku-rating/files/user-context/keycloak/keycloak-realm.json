@@ -1,0 +1,178 @@
+{
+  "realm": "otaku-rating-api",
+  "enabled": true,
+  "displayName": "Otaku Rating API",
+  "displayNameHtml": "<div class=\"kc-logo-text\"><span>Otaku Rating API</span></div>",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 5,
+  "accessTokenLifespan": 900,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "offlineSessionIdleTimeout": 2592000,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "accessCodeLifespanLogin": 1800,
+  "actionTokenGeneratedByAdminLifespan": 43200,
+  "actionTokenGeneratedByUserLifespan": 300,
+  "roles": {
+    "realm": [
+      {
+        "name": "ROLE_ADMIN",
+        "description": "Administrator role with full access",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "otaku-rating-api"
+      },
+      {
+        "name": "ROLE_MODERATOR",
+        "description": "Moderator role with limited admin access",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "otaku-rating-api"
+      },
+      {
+        "name": "ROLE_COMMON",
+        "description": "Common user role",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "otaku-rating-api"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "otaku-rating-api-client",
+      "name": "Otaku Rating API Client",
+      "description": "Main API client for authentication",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "tryeur6JeDE4dAJ2qxjEpkE19NbbNCc0",
+      "redirectUris": ["*"],
+      "webOrigins": ["*"],
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": false,
+      "fullScopeAllowed": true,
+      "attributes": {
+        "access.token.lifespan": "900",
+        "client.secret.creation.time": "1234567890"
+      },
+      "protocolMappers": [
+        {
+          "name": "realm-roles-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "username-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "username",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "preferred_username",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "email-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "email",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "email",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "admin_user",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Admin",
+      "lastName": "User",
+      "email": "admin@otakurating.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["ROLE_ADMIN"],
+      "clientRoles": {}
+    },
+    {
+      "username": "moderator_user",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Moderator",
+      "lastName": "User",
+      "email": "moderator@otakurating.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "moderator123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["ROLE_MODERATOR"],
+      "clientRoles": {}
+    },
+    {
+      "username": "common_user",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Common",
+      "lastName": "User",
+      "email": "user@otakurating.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "user123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["ROLE_COMMON"],
+      "clientRoles": {}
+    }
+  ]
+}

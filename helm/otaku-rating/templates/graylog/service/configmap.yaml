@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Values.graylog.name }}-cm"
+  namespace: {{ .Release.Namespace }}
+data:
+  GRAYLOG_MONGODB_URI: "mongodb://{{ .Values.graylog_db.name }}-svc:{{ .Values.graylog_db.service.port }}/{{ .Values.graylog_opensearch.cm.CLUSTER_NAME }}"
+  GRAYLOG_ELASTICSEARCH_HOSTS: "http://{{ .Values.graylog_opensearch.name }}-svc:{{ .Values.graylog_opensearch.service.port }}"
+  GRAYLOG_HTTP_BIND_ADDRESS: "{{ .Values.graylog.cm.GRAYLOG_HTTP_BIND_ADDRESS }}"
+  GRAYLOG_HTTP_EXTERNAL_URI: "{{ .Values.graylog.cm.GRAYLOG_HTTP_EXTERNAL_URI }}"
+  GRAYLOG_HTTP_ENABLE_CORS: "{{ .Values.graylog.cm.GRAYLOG_HTTP_ENABLE_CORS }}"

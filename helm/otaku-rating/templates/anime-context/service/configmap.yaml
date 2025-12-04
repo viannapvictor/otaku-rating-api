@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Values.anime_service.name }}-cm"
+  namespace: {{ .Release.Namespace }}
+data:
+  SERVICE_HOST: "{{ .Values.anime_service.name }}-svc"
+  MONGODB_URI: "mongodb://{{ .Values.anime_db.name }}-svc:{{ .Values.anime_db.service.port }}/{{ .Values.anime_service.cm.DATABASE_NAME }}"
+  MONGODB_DATABASE: "{{ .Values.anime_service.cm.DATABASE_NAME }}"
+  SPRING_CLOUD_CONSUL_HOST: "{{ .Values.consul.name }}-svc"
+  SPRING_CLOUD_CONSUL_PORT: "{{ .Values.consul.service.http.port }}"
+  KAFKA_BOOTSTRAP_SERVERS: "{{ .Values.kafka.name }}-svc:{{ .Values.kafka.service.broker.port }}"
+  GRAYLOG_HOST: "{{ .Values.graylog.name }}-svc"
+  GRAYLOG_PORT: "{{ .Values.graylog.service.gelf.port }}"

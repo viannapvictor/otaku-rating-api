@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Values.gateway_service.name }}-cm"
+  namespace: {{ .Release.Namespace }}
+data:
+  SERVICE_HOST: "{{ .Values.gateway_service.name }}-svc"
+  SPRING_CLOUD_CONSUL_HOST: "{{ .Values.consul.name }}-svc"
+  SPRING_CLOUD_CONSUL_PORT: "{{ .Values.consul.service.http.port }}"
+  KAFKA_BOOTSTRAP_SERVERS: "{{ .Values.kafka.name }}-svc:{{ .Values.kafka.service.broker.port }}"
+  GRAYLOG_HOST: "{{ .Values.graylog.name }}-svc"
+  GRAYLOG_PORT: "{{ .Values.graylog.service.gelf.port }}"

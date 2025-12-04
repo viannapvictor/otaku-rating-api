@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{.Release.Namespace}}
+  name: "{{.Values.user_db.name}}-svc"
+spec:
+  selector:
+    app: {{ .Values.user_db.name }}
+  type: {{.Values.user_db.service.type}}
+  ports:
+    - protocol: TCP
+      {{- if (eq .Values.user_db.service.type "NodePort")}}
+      nodePort: {{.Values.user_db.service.nodePort}}
+      {{- end}}
+      targetPort: {{.Values.user_db.service.targetPort}}
+      port: {{.Values.user_db.service.port}}

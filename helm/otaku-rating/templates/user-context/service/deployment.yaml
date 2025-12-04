@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Values.user_service.name }}-deploy"
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.user_service.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.user_service.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.user_service.name }}
+    spec:
+      containers:
+        - name: {{ .Values.user_service.name }}
+          image: "{{ .Values.user_service.image }}:{{ .Values.user_service.tag }}"
+          imagePullPolicy: {{ .Values.user_service.imagePullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: "{{ .Values.user_service.name }}-cm"
+            - secretRef:
+                name: "{{ .Values.user_service.name }}-secret"
+      restartPolicy: Always

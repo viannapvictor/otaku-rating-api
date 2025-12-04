@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{.Release.Namespace}}
+  name: "{{.Values.rating_service.name}}-svc"
+spec:
+  selector:
+    app: {{ .Values.rating_service.name }}
+  type: {{.Values.rating_service.service.type}}
+  ports:
+    - protocol: TCP
+      {{- if (eq .Values.rating_service.service.type "NodePort")}}
+      nodePort: {{.Values.rating_service.service.nodePort}}
+      {{- end}}
+      targetPort: {{.Values.rating_service.service.targetPort}}
+      port: {{.Values.rating_service.service.port}}
