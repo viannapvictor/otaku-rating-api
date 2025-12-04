@@ -4,7 +4,7 @@ import com.otakurating.anime.core.exception.AnimeDescriptionInvalidLengthExcepti
 import com.otakurating.anime.core.exception.AnimeDescriptionNullException;
 
 public final class AnimeDescription {
-    public static final int MAX_LENGTH = 512;
+    public static final int MAX_LENGTH = 1024;
 
     private final String value;
 
